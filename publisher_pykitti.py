@@ -15,7 +15,6 @@ Usage:
   python publisher_pykitti.py --basedir /path/to/KITTI --date 2011_09_26 \
       --drive 2011_09_26_drive_0011_sync --frame 000000 --vehicle-id ego --send-rsu
 
-Requires: pykitti (pip install pykitti)
 """
 import argparse
 import struct
