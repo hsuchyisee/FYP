@@ -6,7 +6,7 @@ from config import MEDIA_DIR
 def show_frame(path: Path, caption: str):
     st.markdown(f"**{caption}**")
     if path.exists():
-        st.image(str(path), use_container_width=True)
+        st.image(str(path), use_column_width=True)
     else:
         st.warning(f"File not found: {path}")
 
@@ -20,7 +20,7 @@ def render_media(model: str, scenario: str):
 
     if video_path.exists():
         with open(video_path, "rb") as video_file:
-            st.video(video_file.read(), autoplay=True, loop=True, muted=True)
+            st.video(video_file.read())
     else:
         st.warning(f"No video found: {video_path}")
 

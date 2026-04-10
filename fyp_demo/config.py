@@ -13,3 +13,6 @@ SCENARIOS = [
 
 # Root data folder
 MEDIA_DIR = "data"
+
+# Analysis images (AP analysis, loss curves)
+ANALYSIS_DIR = "data/analysis"
