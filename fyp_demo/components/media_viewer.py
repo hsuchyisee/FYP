@@ -6,7 +6,7 @@ from config import MEDIA_DIR
 def show_frame(path: Path, caption: str):
     st.markdown(f"**{caption}**")
     if path.exists():
-        st.image(str(path), use_column_width=True)
+        st.image(str(path), use_container_width=True)
     else:
         st.warning(f"File not found: {path}")
 

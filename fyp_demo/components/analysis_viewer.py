@@ -9,12 +9,12 @@ def render_analysis():
 
     st.markdown("**AP Analysis**")
     if ap_path.exists():
-        st.image(str(ap_path), use_column_width=True)
+        st.image(str(ap_path), use_container_width=True)
     else:
         st.warning(f"File not found: {ap_path}")
 
     st.markdown("**Loss Curves**")
     if loss_path.exists():
-        st.image(str(loss_path), use_column_width=True)
+        st.image(str(loss_path), use_container_width=True)
     else:
         st.warning(f"File not found: {loss_path}")
