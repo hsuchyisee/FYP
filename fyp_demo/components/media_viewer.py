@@ -20,7 +20,7 @@ def render_media(model: str, scenario: str):
 
     if video_path.exists():
         with open(video_path, "rb") as video_file:
-            st.video(video_file.read())
+            st.video(video_file.read(), autoplay=True, loop=True, muted=True)
     else:
         st.warning(f"No video found: {video_path}")
 

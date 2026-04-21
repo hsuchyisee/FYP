@@ -2,6 +2,8 @@
 # These must match the subfolder names inside data/videos/ and data/frames/
 MODELS = [
     "early",
+    "intermediate",
+    "late",
     "vit"
 ]
 
