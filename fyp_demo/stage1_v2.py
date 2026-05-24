@@ -8,15 +8,22 @@ from stage3 import render_stage3, STAGE3_CSS
 st.set_page_config(
     page_title="SemanticV2V — Research Dashboard",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="auto"
 )
 
 # ── CSS ────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-  html, body, [class*="css"] {
+  html, body, [class*="css"],
+  [data-testid="stApp"],
+  [data-testid="stAppViewContainer"],
+  [data-testid="stAppViewBlockContainer"],
+  [data-testid="stMain"],
+  [data-testid="stMainBlockContainer"],
+  section[data-testid="stSidebar"],
+  .main, .block-container {
     font-family: 'Inter', sans-serif;
     background-color: #060a14;
     color: #e2e8f0;
