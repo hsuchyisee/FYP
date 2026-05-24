@@ -3,151 +3,7 @@ import yaml
 import time
 from pathlib import Path
 from utils import render_tunnel
-
-
-STAGE3_CSS = """
-  /* Hide video controls completely */
-  video::-webkit-media-controls { display: none !important; }
-  video { pointer-events: none; }
-
-  /* Model compare cards */
-  .mc-card {
-    background: #060a14;
-    border: 1px solid #1e293b;
-    border-radius: 12px;
-    padding: 20px 16px;
-    position: relative;
-    transition: border-color 0.5s, box-shadow 0.5s;
-  }
-  .mc-card.best-glow {
-    border-color: #16a34a;
-    box-shadow: 0 0 28px #16a34a33, 0 0 56px #16a34a11;
-  }
-  .mc-card.best-glow::before {
-    content: '★  BEST';
-    position: absolute;
-    top: -10px; left: 50%;
-    transform: translateX(-50%);
-    background: #16a34a;
-    color: #f0fdf4;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; font-weight: 700;
-    letter-spacing: 0.15em;
-    padding: 2px 10px;
-    border-radius: 10px;
-    white-space: nowrap;
-  }
-  .mc-model-name {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    color: #475569;
-    margin-bottom: 14px;
-    text-align: center;
-  }
-  .mc-model-name.best { color: #4ade80; }
-
-  .mc-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: #334155;
-    padding: 4px 0;
-    border-bottom: 1px solid #0f172a;
-  }
-  .mc-row:last-child { border-bottom: none; }
-  .mc-row-label { color: #475569; font-size: 10px; }
-  .mc-row-val   { color: #94a3b8; font-size: 14px; font-weight: 700; }
-  .mc-row-val.improved { color: #60a5fa; }
-  .mc-row-val.best-val { color: #4ade80; }
-  .mc-delta-inline {
-    font-size: 10px;
-    color: #4ade80;
-    margin-left: 6px;
-    font-weight: 400;
-  }
-
-  /* Recommendation card */
-  .rec-card {
-    background: #030d04;
-    border: 1px solid #16a34a44;
-    border-left: 4px solid #16a34a;
-    border-radius: 12px;
-    padding: 28px 32px;
-    margin: 24px 0;
-    animation: recFadeIn 0.7s ease;
-  }
-  @keyframes recFadeIn {
-    from { opacity:0; transform:translateY(12px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
-  .rec-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: #16a34a;
-    text-transform: uppercase; letter-spacing: 0.18em;
-    margin-bottom: 6px;
-  }
-  .rec-model-name {
-    font-size: 26px; font-weight: 600;
-    color: #4ade80; margin-bottom: 16px;
-  }
-  .rec-delta-cards {
-    display: flex; gap: 10px; flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-  .rec-delta-card {
-    background: #052e16;
-    border: 1px solid #16a34a33;
-    border-radius: 8px;
-    padding: 10px 16px;
-    text-align: center;
-    min-width: 100px;
-  }
-  .rec-delta-val {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 20px; font-weight: 700;
-    color: #4ade80; line-height: 1;
-    margin-bottom: 3px;
-  }
-  .rec-delta-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; color: #16a34a;
-    text-transform: uppercase; letter-spacing: 0.1em;
-  }
-  .rec-divider { border:none; border-top:1px solid #0d2010; margin:16px 0; }
-  .rec-section-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: #16a34a;
-    text-transform: uppercase; letter-spacing: 0.12em;
-    margin-bottom: 8px; font-weight: 600;
-  }
-  .config-block {
-    background: #020c02;
-    border: 1px solid #0d2010;
-    border-radius: 8px;
-    padding: 14px 18px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: #334155; line-height: 2.2;
-  }
-  .ck { color: #16a34a; }
-  .cv { color: #4ade80; }
-  .rec-body { font-size: 13px; color: #475569; line-height: 1.8; }
-
-  .proceed-hint {
-    text-align: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: #1e3a5f;
-    letter-spacing: 0.1em; margin-bottom: 8px;
-    text-transform: uppercase;
-  }
-
-  @keyframes fadeIn {
-    from { opacity:0; transform:translateY(8px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
-"""
+from theme import COLORS, FONTS
 
 
 # ══════════════════════════════════════════════════════════════
@@ -382,8 +238,8 @@ def _render_rec_card(project_root: str):
     else:
         param_rows = "".join([
             f'<span class="ck">{p[0]:<20}</span> '
-            f'<span style="color:#475569;">{p[1]}</span>'
-            f' <span style="color:#334155;">→</span> '
+            f'<span style="color:{COLORS["text_dim"]};">{p[1]}</span>'
+            f' <span style="color:{COLORS["text_faint"]};">→</span> '
             f'<span class="cv">{p[2]}</span><br>'
             for p in best["tuned_params"]
         ])
@@ -468,28 +324,31 @@ def render_stage3(project_root: str, scenario_id: str):
     if not st.session_state.s3_inference_done:
         render_tunnel(
             label      = "Running inference analysis...",
-            done_label = "✓ Inference ready"
+            done_label = "✓ Inference ready",
+            steps      = 40,
+            step_delay = 0.065,
         )
         st.session_state.s3_inference_done = True
         st.rerun()
 
     # Static tunnel marker — shown on reruns so it stays visible
-    st.markdown("""
+    g = COLORS["tunnel_green"]
+    st.markdown(f"""
     <div style="display:flex;flex-direction:column;align-items:center;padding:4px 0 8px;">
       <div style="position:relative;width:4px;height:120px;
-           background:#0f1929;border-radius:4px;overflow:visible;">
-        <div style="width:12px;height:12px;border-radius:50%;background:#4ade80;
-             box-shadow:0 0 12px #4ade80,0 0 24px #4ade8088;
+           background:{COLORS['tunnel_track']};border-radius:4px;overflow:visible;">
+        <div style="width:12px;height:12px;border-radius:50%;background:{g};
+             box-shadow:0 0 12px {g},0 0 24px {g}88;
              position:absolute;top:-6px;left:50%;transform:translateX(-50%);"></div>
         <div style="position:absolute;left:0;top:0;width:100%;height:120px;
-             border-radius:4px;background:linear-gradient(to bottom,#3b82f6,#22d3ee,#4ade80);
-             box-shadow:0 0 14px #4ade80bb,0 0 28px #4ade8044;"></div>
-        <div style="width:12px;height:12px;border-radius:50%;background:#4ade80;
-             box-shadow:0 0 12px #4ade80,0 0 24px #4ade8088;
+             border-radius:4px;background:linear-gradient(to bottom,{COLORS['tunnel_blue']},{COLORS['tunnel_cyan']},{g});
+             box-shadow:0 0 14px {g}bb,0 0 28px {g}44;"></div>
+        <div style="width:12px;height:12px;border-radius:50%;background:{g};
+             box-shadow:0 0 12px {g},0 0 24px {g}88;
              position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);"></div>
       </div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;
-           color:#4ade80;margin-top:12px;text-align:center;line-height:1.8;">
+      <div style="font-family:{FONTS['mono']};font-size:11px;
+           color:{COLORS['green_dark']};margin-top:12px;text-align:center;line-height:1.8;">
         100%<br>✓ Inference ready
       </div>
     </div>
@@ -509,8 +368,10 @@ def render_stage3(project_root: str, scenario_id: str):
     _render_rec_card(project_root)
 
     # ── Step 5: LiDAR video with tunnel ───────────────────────
-    st.markdown('<hr style="border:none;border-top:1px solid #0f172a;margin:28px 0;">',
-                unsafe_allow_html=True)
+    st.markdown(
+        f'<hr style="border:none;border-top:1px solid {COLORS["border"]};margin:28px 0;">',
+        unsafe_allow_html=True,
+    )
 
     if not st.session_state.s3_video_started:
         st.markdown('<div class="proceed-hint">LiDAR detection output ready</div>',
@@ -524,38 +385,41 @@ def render_stage3(project_root: str, scenario_id: str):
         if not st.session_state.s3_video_tunnel_done:
             render_tunnel(
                 label      = "Loading LiDAR detection output...",
-                done_label = "✓ LiDAR detection ready"
+                done_label = "✓ LiDAR detection ready",
+                steps      = 28,
+                step_delay = 0.040,
             )
             st.session_state.s3_video_tunnel_done = True
             st.rerun()
 
         # Static lidar tunnel marker
-        st.markdown("""
+        g2 = COLORS["tunnel_green"]
+        st.markdown(f"""
         <div style="display:flex;flex-direction:column;align-items:center;padding:4px 0 8px;">
           <div style="position:relative;width:4px;height:120px;
-               background:#0f1929;border-radius:4px;overflow:visible;">
-            <div style="width:12px;height:12px;border-radius:50%;background:#4ade80;
-                 box-shadow:0 0 12px #4ade80,0 0 24px #4ade8088;
+               background:{COLORS['tunnel_track']};border-radius:4px;overflow:visible;">
+            <div style="width:12px;height:12px;border-radius:50%;background:{g2};
+                 box-shadow:0 0 12px {g2},0 0 24px {g2}88;
                  position:absolute;top:-6px;left:50%;transform:translateX(-50%);"></div>
             <div style="position:absolute;left:0;top:0;width:100%;height:120px;
-                 border-radius:4px;background:linear-gradient(to bottom,#3b82f6,#22d3ee,#4ade80);
-                 box-shadow:0 0 14px #4ade80bb,0 0 28px #4ade8044;"></div>
-            <div style="width:12px;height:12px;border-radius:50%;background:#4ade80;
-                 box-shadow:0 0 12px #4ade80,0 0 24px #4ade8088;
+                 border-radius:4px;background:linear-gradient(to bottom,{COLORS['tunnel_blue']},{COLORS['tunnel_cyan']},{g2});
+                 box-shadow:0 0 14px {g2}bb,0 0 28px {g2}44;"></div>
+            <div style="width:12px;height:12px;border-radius:50%;background:{g2};
+                 box-shadow:0 0 12px {g2},0 0 24px {g2}88;
                  position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);"></div>
           </div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;
-               color:#4ade80;margin-top:12px;text-align:center;line-height:1.8;">
+          <div style="font-family:{FONTS['mono']};font-size:11px;
+               color:{COLORS['green_dark']};margin-top:12px;text-align:center;line-height:1.8;">
             100%<br>✓ LiDAR detection ready
           </div>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("""
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;
-             color:#1e3a5f;text-transform:uppercase;letter-spacing:0.15em;
+        st.markdown(f"""
+        <div style="font-family:{FONTS['mono']};font-size:10px;
+             color:{COLORS['accent']};text-transform:uppercase;letter-spacing:0.15em;
              margin-bottom:12px;">LiDAR Detection — Best Model · Live Output</div>
-        <div style="font-size:13px;color:#334155;margin-bottom:16px;line-height:1.7;">
+        <div style="font-size:13px;color:{COLORS['text_muted']};margin-bottom:16px;line-height:1.7;">
           Bird's-eye-view cooperative detection from the recommended model.
           3D bounding boxes show detected objects across all cooperating agents.
         </div>

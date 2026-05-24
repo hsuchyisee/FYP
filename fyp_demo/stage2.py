@@ -3,58 +3,7 @@ import yaml
 import plotly.graph_objects as go
 from pathlib import Path
 from collections import Counter
-
-
-STAGE2_CSS = """
-  .obj-pill {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin: 2px 3px 2px 0;
-    background: #0f172a;
-    color: #475569;
-    border: 1px solid #1e293b;
-  }
-  .obj-pill.car        { color: #60a5fa; border-color: #1e3a5f; }
-  .obj-pill.pedestrian { color: #34d399; border-color: #14532d; }
-  .obj-pill.truck      { color: #f59e0b; border-color: #3a2a07; }
-  .obj-pill.bus        { color: #a78bfa; border-color: #2e1065; }
-  .obj-pill.van        { color: #fb923c; border-color: #431407; }
-  .obj-pill.other      { color: #64748b; border-color: #1e293b; }
-
-  .agent-card-box {
-    background: #0d1424;
-    border: 1px solid #1e293b;
-    border-radius: 12px;
-    padding: 18px 20px;
-    height: 100%;
-  }
-  .agent-card-box.vehicle { border-left: 3px solid #3b82f6; }
-  .agent-card-box.infra   { border-left: 3px solid #f59e0b; }
-
-  .agent-badge {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 20px;
-    letter-spacing: 0.08em;
-    margin-bottom: 10px;
-  }
-  .badge-vehicle { background: #0d1f3c; color: #60a5fa; border: 1px solid #1e3a5f; }
-  .badge-infra   { background: #1c1207; color: #f59e0b; border: 1px solid #3a2a07; }
-
-  .agent-meta-row {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: #334155;
-    line-height: 2.1;
-  }
-  .agent-meta-row span { color: #475569; }
-"""
+from theme import COLORS, FONTS
 
 
 def load_frame_yaml(agent_path: Path, frame: str = "000000") -> dict:
@@ -75,31 +24,31 @@ def get_agent_folders(scenario_path: Path) -> list:
 def render_agent_map(agents_data: list):
     fig = go.Figure()
     for agent in agents_data:
-        color  = "#f59e0b" if agent["is_infra"] else "#3b82f6"
+        color  = COLORS["infra"] if agent["is_infra"] else COLORS["vehicle"]
         symbol = "square"  if agent["is_infra"] else "circle"
         label  = f"RSU {agent['name']}" if agent["is_infra"] else f"CAV {agent['name']}"
         fig.add_trace(go.Scatter(
             x=[agent["x"]], y=[agent["y"]],
             mode="markers+text",
             marker=dict(size=18, color=color, symbol=symbol,
-                        line=dict(color="#0a0e1a", width=2)),
+                        line=dict(color=COLORS["panel"], width=2)),
             text=[label], textposition="top center",
             textfont=dict(family="JetBrains Mono", size=11, color=color),
             name=label, showlegend=True
         ))
     fig.update_layout(
-        paper_bgcolor="#060a14", plot_bgcolor="#0a0f1e",
-        font=dict(color="#64748b", family="JetBrains Mono", size=10),
+        paper_bgcolor=COLORS["panel"], plot_bgcolor=COLORS["bg"],
+        font=dict(color=COLORS["text_muted"], family="JetBrains Mono", size=10),
         title=dict(text="Agent Positions — Top-Down View (Frame 000000)",
-                   font=dict(color="#475569", size=12), x=0.02),
-        xaxis=dict(showgrid=True, gridcolor="#0f1929", zeroline=False,
+                   font=dict(color=COLORS["text"], size=12), x=0.02),
+        xaxis=dict(showgrid=True, gridcolor=COLORS["border"], zeroline=False,
                    tickfont=dict(size=9),
-                   title=dict(text="X (m)", font=dict(size=10, color="#334155"))),
-        yaxis=dict(showgrid=True, gridcolor="#0f1929", zeroline=False,
+                   title=dict(text="X (m)", font=dict(size=10, color=COLORS["text_dim"]))),
+        yaxis=dict(showgrid=True, gridcolor=COLORS["border"], zeroline=False,
                    tickfont=dict(size=9),
-                   title=dict(text="Y (m)", font=dict(size=10, color="#334155")),
+                   title=dict(text="Y (m)", font=dict(size=10, color=COLORS["text_dim"])),
                    scaleanchor="x", scaleratio=1),
-        legend=dict(bgcolor="#0a0f1e", bordercolor="#1e293b",
+        legend=dict(bgcolor=COLORS["panel"], bordercolor=COLORS["border"],
                     borderwidth=1, font=dict(size=10)),
         margin=dict(l=40, r=20, t=40, b=40), height=380,
     )
@@ -161,7 +110,7 @@ def render_stage2(scenario_id: str, dataset_root: str):
 
     if not scenario_path.exists():
         st.error(f"Scenario folder not found: {scenario_path}")
-        st.info("Update dataset_root in app.py to point to Camera_LiDAR_test/test/")
+        st.info("Update dataset_root in stage1_v2.py to point to a valid Camera_LiDAR directory")
         return
 
     agent_folders = get_agent_folders(scenario_path)
@@ -220,30 +169,30 @@ def render_stage2(scenario_id: str, dataset_root: str):
     avg_spd = sum(speeds) / len(speeds) if speeds else 0.0
     type_counts = Counter(obj_types)
 
-    st.markdown("""
-    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;
-         color:#1e3a5f;text-transform:uppercase;letter-spacing:0.15em;
+    st.markdown(f"""
+    <div style="font-family:{FONTS['mono']};font-size:10px;
+         color:{COLORS['accent']};text-transform:uppercase;letter-spacing:0.15em;
          margin-bottom:12px;">Scene Statistics · Frame 000000</div>
     """, unsafe_allow_html=True)
 
     sc1, sc2, sc3, sc4, sc5 = st.columns(5)
     for col, label, value, color in [
-        (sc1, "Total Agents",           len(agents_data), "#e2e8f0"),
-        (sc2, "Vehicles (CAV)",         n_cav,            "#60a5fa"),
-        (sc3, "Infrastructure (RSU)",   n_rsu,            "#f59e0b"),
-        (sc4, "Objects in Scene",       n_obj,            "#34d399"),
-        (sc5, "Avg Speed (m/s)",        f"{avg_spd:.1f}", "#a78bfa"),
+        (sc1, "Total Agents",           len(agents_data), COLORS["text"]),
+        (sc2, "Vehicles (CAV)",         n_cav,            COLORS["vehicle"]),
+        (sc3, "Infrastructure (RSU)",   n_rsu,            COLORS["infra"]),
+        (sc4, "Objects in Scene",       n_obj,            COLORS["green_dark"]),
+        (sc5, "Avg Speed (m/s)",        f"{avg_spd:.1f}", "#7c3aed"),
     ]:
         with col:
             st.markdown(f"""
-            <div style="background:#060a14;border:1px solid #1e293b;border-radius:10px;
-                 padding:14px 12px;text-align:center;">
-              <div style="font-family:'JetBrains Mono',monospace;font-size:26px;
+            <div style="background:{COLORS['panel']};border:1px solid {COLORS['border']};border-radius:10px;
+                 padding:14px 12px;text-align:center;box-shadow:0 1px 3px rgba(15,23,42,0.04);">
+              <div style="font-family:{FONTS['mono']};font-size:26px;
                    font-weight:700;color:{color};line-height:1;margin-bottom:6px;">
                 {value}
               </div>
-              <div style="font-size:10px;color:#334155;text-transform:uppercase;
-                   letter-spacing:0.08em;font-family:'JetBrains Mono',monospace;
+              <div style="font-size:10px;color:{COLORS['text_dim']};text-transform:uppercase;
+                   letter-spacing:0.08em;font-family:{FONTS['mono']};
                    line-height:1.4;">{label}</div>
             </div>
             """, unsafe_allow_html=True)
@@ -260,11 +209,11 @@ def render_stage2(scenario_id: str, dataset_root: str):
             f'<span class="obj-pill {css}" style="margin:0 6px;">'
             f'{t}&nbsp;&times;&nbsp;{c}</span>'
         )
-    obj_sentence = ' <span style="color:#94a3b8;">·</span> '.join(obj_parts)
+    obj_sentence = f' <span style="color:{COLORS["text_faint"]};">·</span> '.join(obj_parts)
     st.markdown(f"""
     <div style="margin:12px 0 28px;line-height:2.5;">
-      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;
-            color:#1e3a5f;text-transform:uppercase;letter-spacing:0.1em;
+      <span style="font-family:{FONTS['mono']};font-size:10px;
+            color:{COLORS['accent']};text-transform:uppercase;letter-spacing:0.1em;
             margin-right:12px;">Objects detected</span>
       {obj_sentence}
     </div>
@@ -273,17 +222,20 @@ def render_stage2(scenario_id: str, dataset_root: str):
     # ── Agent map full width ───────────────────────────────────
     render_agent_map(agents_data)
 
-    st.markdown('<hr style="border:none;border-top:1px solid #0f172a;margin:28px 0;">', unsafe_allow_html=True)
+    st.markdown(
+        f'<hr style="border:none;border-top:1px solid {COLORS["border"]};margin:28px 0;">',
+        unsafe_allow_html=True,
+    )
 
     # ── Agent cards — 2x2 grid ─────────────────────────────────
     # Separate infra and vehicle agents
     infra_agents   = [a for a in agents_data if a["is_infra"]]
     vehicle_agents = [a for a in agents_data if not a["is_infra"]]
 
-    st.markdown("""
-    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;
-         color:#1e3a5f;text-transform:uppercase;letter-spacing:0.15em;
-         margin-bottom:20px;">Agent Details & Camera Feeds · Frame 000000</div>
+    st.markdown(f"""
+    <div style="font-family:{FONTS['mono']};font-size:10px;
+         color:{COLORS['accent']};text-transform:uppercase;letter-spacing:0.15em;
+         margin-bottom:20px;">Agent Details &amp; Camera Feeds · Frame 000000</div>
     """, unsafe_allow_html=True)
 
     # Row 1: RSU cards
