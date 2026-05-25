@@ -222,8 +222,9 @@ st.markdown("""
 st.markdown("""
 <div class="v2v-site-title">Semantic V2V Communication</div>
 <nav class="v2v-nav">
-  <a href="/" class="v2v-tab">Dashboard</a>
-  <a href="/analysis" class="v2v-tab active">Analysis</a>
+  <a href="/" class="v2v-tab" target="_self">Dashboard</a>
+  <a href="/analysis" class="v2v-tab active" target="_self">Analysis</a>
+  <a href="/tensorboard" class="v2v-tab" target="_self">TensorBoard</a>
 </nav>
 """, unsafe_allow_html=True)
 

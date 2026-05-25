@@ -538,6 +538,59 @@ def make_stage3_css() -> str:
 """
 
 
+def make_nav_css() -> str:
+    """Shared top-nav bar styling used across all pages."""
+    return """
+<style>
+ .stApp, [data-testid="stAppViewContainer"] {
+   background-color: #FFFFFF !important;
+   color: #111827 !important;
+ }
+ [data-testid="stHeader"] { background-color: #FFFFFF !important; }
+ h1, h2, h3, h4, h5, h6, .stMarkdown p, p, label { color: #111827 !important; }
+ hr { border-color: #B0B8C8 !important; }
+ .stCaption, medium { color: #4B5563 !important; }
+ .v2v-site-title {
+   font-size: 45px;
+   font-weight: 700;
+   color: #111827 !important;
+   margin: 0;
+   padding: 8px 0 14px;
+   letter-spacing: -0.01em;
+   line-height: 1.1;
+ }
+ .v2v-nav {
+   display: flex;
+   border-bottom: 1.5px solid #E5E7EB;
+   margin-bottom: 16px;
+   padding: 0;
+   gap: 0;
+ }
+ .v2v-tab {
+   display: inline-block;
+   padding: 10px 20px 10px 0;
+   font-size: 1.5rem;
+   font-weight: 500;
+   color: #6B7280 !important;
+   text-decoration: none !important;
+   border-bottom: 2px solid transparent;
+   margin-bottom: -1.5px;
+   margin-right: 8px;
+   transition: color 0.18s ease, border-color 0.18s ease;
+ }
+ .v2v-tab:hover {
+   color: #111827 !important;
+   text-decoration: none !important;
+ }
+ .v2v-tab.active {
+   color: #10B981 !important;
+   border-bottom-color: #10B981;
+   font-weight: 600;
+ }
+</style>
+"""
+
+
 def make_stage4_css() -> str:
     """Stage 4 only: channel-noise metric strip, status badge, image rows
     with selected-column glow, BEV legend, and explanatory note."""
