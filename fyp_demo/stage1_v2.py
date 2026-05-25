@@ -1,8 +1,9 @@
 import streamlit as st
 from utils import render_tunnel
-from theme import make_global_css, make_stage2_css, make_stage3_css
+from theme import make_global_css, make_stage2_css, make_stage3_css, make_stage4_css
 from stage2 import render_stage2
 from stage3 import render_stage3
+from stage4 import render_stage4
 from scenario_loader import (
     validate_and_extract_zip,
     cleanup_extracted,
@@ -23,7 +24,7 @@ st.set_page_config(
 
 # ── CSS (all design tokens live in theme.py) ───────────────────
 st.markdown(
-    make_global_css() + make_stage2_css() + make_stage3_css(),
+    make_global_css() + make_stage2_css() + make_stage3_css() + make_stage4_css(),
     unsafe_allow_html=True,
 )
 
@@ -222,11 +223,12 @@ if sc_to_load is not None:
     if prev and prev.get("_uploaded") and prev is not sc_to_load:
         cleanup_extracted(prev)
 
-    # Reset all downstream stage-3 progress so re-loading any scenario
-    # (same or different) starts fresh — no carried-over inference/lidar results.
+    # Reset all downstream stage-3/4 progress so re-loading any scenario
+    # (same or different) starts fresh — no carried-over inference/lidar/noise results.
     for key in ["s3_inference_started", "s3_inference_done",
                 "s3_cards_animated",
-                "s3_video_started", "s3_video_tunnel_done"]:
+                "s3_video_started", "s3_video_tunnel_done",
+                "s4_started", "s4_tunnel_done", "s4_snr_slider"]:
         if key in st.session_state:
             del st.session_state[key]
 
@@ -335,6 +337,16 @@ else:
         # Local path: "C:/Users/Jess/Downloads/MDS18_GitRepo/FYP/V2X-Real"
     )
 
+    # ── Stage 4: Channel Noise Robustness ─────────────────────
+    # Unlocks only after Stage 3's LiDAR detection has run, so the
+    # stage 3→4 tunnel reads as a continuation of the pipeline.
+    if st.session_state.get("s3_video_tunnel_done"):
+        st.markdown("<br>", unsafe_allow_html=True)
+        render_stage4(
+            dataset_root = active_dataset_root,
+            scenario_id  = st.session_state.scenario["id"],
+        )
+
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("↩  Load a different scenario"):
         # Clean up any temp dir from a previously uploaded scenario
@@ -344,7 +356,8 @@ else:
         for key in ["stage", "scenario",
                     "s3_inference_started", "s3_inference_done",
                     "s3_cards_animated",
-                    "s3_video_started", "s3_video_tunnel_done"]:
+                    "s3_video_started", "s3_video_tunnel_done",
+                    "s4_started", "s4_tunnel_done", "s4_snr_slider"]:
             if key in st.session_state:
                 del st.session_state[key]
 

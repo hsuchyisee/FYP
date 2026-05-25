@@ -40,6 +40,10 @@ COLORS = {
     "amber":         "#d97706",
     "amber_soft":    "#fef3c7",
     "amber_bg":      "#fffbeb",
+    "red":           "#dc2626",
+    "red_dark":      "#b91c1c",
+    "red_soft":      "#fecaca",
+    "red_bg":        "#fef2f2",
 
     # Tunnel gradient (kept saturated — works on light bg)
     "tunnel_blue":   "#3b82f6",
@@ -530,5 +534,143 @@ def make_stage3_css() -> str:
     letter-spacing: 0.1em; margin-bottom: 8px;
     text-transform: uppercase;
   }}
+</style>
+"""
+
+
+def make_stage4_css() -> str:
+    """Stage 4 only: channel-noise metric strip, status badge, image rows
+    with selected-column glow, BEV legend, and explanatory note."""
+    c = COLORS
+    return f"""
+<style>
+  /* Metric strip */
+  .s4-metric-wrap {{
+    display: flex; align-items: stretch; gap: 14px;
+    margin: 8px 0 6px; flex-wrap: wrap;
+  }}
+  .s4-metric-card {{
+    background: {c['panel']};
+    border: 1px solid {c['border']};
+    border-radius: 12px;
+    padding: 16px 22px;
+    box-shadow: {SHADOWS['panel']};
+    min-width: 150px;
+  }}
+  .s4-metric-label {{
+    font-family: {FONTS['mono']}; font-size: 9px;
+    color: {c['text_dim']}; text-transform: uppercase;
+    letter-spacing: 0.12em; margin-bottom: 6px;
+  }}
+  .s4-metric-val {{
+    font-family: {FONTS['mono']}; font-size: 30px;
+    font-weight: 700; line-height: 1; color: {c['text']};
+  }}
+  .s4-metric-sub {{
+    font-family: {FONTS['mono']}; font-size: 10px;
+    color: {c['text_faint']}; margin-top: 6px;
+  }}
+
+  /* Status badge */
+  .s4-status {{
+    display: flex; flex-direction: column; justify-content: center;
+    border-radius: 12px; padding: 16px 22px; min-width: 220px;
+    border: 1px solid transparent;
+  }}
+  .s4-status.beneficial     {{ background: {c['green_bg']}; border-color: {c['green']}66; }}
+  .s4-status.below_baseline {{ background: {c['amber_bg']}; border-color: {c['amber']}66; }}
+  .s4-status.collapse       {{ background: {c['red_bg']};   border-color: {c['red']}66; }}
+  .s4-status-label {{
+    font-family: {FONTS['mono']}; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.03em; margin-bottom: 4px;
+  }}
+  .s4-status.beneficial     .s4-status-label {{ color: {c['green_dark']}; }}
+  .s4-status.below_baseline .s4-status-label {{ color: {c['amber']}; }}
+  .s4-status.collapse       .s4-status-label {{ color: {c['red_dark']}; }}
+  .s4-status-desc {{
+    font-family: {FONTS['mono']}; font-size: 10px;
+    color: {c['text_muted']}; line-height: 1.5;
+  }}
+
+  /* Ego-only reference line */
+  .s4-baseline {{
+    font-family: {FONTS['mono']}; font-size: 11px;
+    color: {c['text_muted']}; background: {c['panel_alt']};
+    border: 1px dashed {c['border_strong']}; border-radius: 8px;
+    padding: 8px 14px; margin: 10px 0 4px; line-height: 1.6;
+  }}
+  .s4-baseline b {{ color: {c['text']}; }}
+
+  /* Row label */
+  .s4-row-label {{
+    font-family: {FONTS['mono']}; font-size: 10px;
+    color: {c['accent']}; text-transform: uppercase;
+    letter-spacing: 0.15em; margin: 22px 0 12px;
+  }}
+  .s4-row-label span {{ color: {c['text_dim']}; text-transform: none; letter-spacing: 0; }}
+
+  /* Image rows */
+  .s4-row {{
+    display: flex; gap: 10px; align-items: flex-start;
+    overflow-x: auto; padding: 6px 2px 4px;
+  }}
+  .s4-cell {{ flex: 1 1 0; min-width: 150px; text-align: center; }}
+  .s4-cell a {{ display: block; }}
+  .s4-cell img {{
+    width: 100%; height: auto; display: block;
+    border-radius: 8px; border: 2px solid {c['border']};
+    background: #0a0e1a;
+    transition: box-shadow 0.25s, border-color 0.25s;
+  }}
+  .s4-cell.sel img {{
+    border-color: {c['green']};
+    box-shadow: 0 0 18px {c['green']}66, 0 0 40px {c['green']}22;
+  }}
+  .s4-cap {{
+    font-family: {FONTS['mono']}; font-size: 10px;
+    color: {c['text_dim']}; margin-top: 6px; line-height: 1.4;
+  }}
+  .s4-cell.sel .s4-cap {{ color: {c['green_dark']}; font-weight: 700; }}
+  .s4-cell-missing {{
+    width: 100%; aspect-ratio: 2 / 1; border-radius: 8px;
+    border: 2px dashed {c['border_strong']}; background: {c['panel_alt']};
+    display: flex; align-items: center; justify-content: center;
+    font-family: {FONTS['mono']}; font-size: 10px; color: {c['text_faint']};
+  }}
+
+  /* BEV large-selected view + thumbnail strip */
+  .s4-bev-large img {{
+    width: 100%; height: auto; display: block;
+    border-radius: 10px; border: 2px solid {c['green']};
+    background: #0a0e1a;
+    box-shadow: 0 0 18px {c['green']}66, 0 0 40px {c['green']}22;
+  }}
+  .s4-bev-large .s4-cap {{ text-align: center; margin-top: 8px; }}
+  .s4-row.thumbs {{ margin-top: 10px; }}
+  .s4-row.thumbs .s4-cell {{ min-width: 88px; }}
+  .s4-row.thumbs .s4-cap {{ font-size: 9px; }}
+
+  /* BEV legend */
+  .s4-legend {{
+    display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+    margin: 4px 0 10px; font-family: {FONTS['mono']}; font-size: 11px;
+    color: {c['text_muted']};
+  }}
+  .s4-legend-item {{ display: inline-flex; align-items: center; gap: 7px; }}
+  .s4-swatch {{ width: 22px; height: 13px; border-radius: 2px; }}
+  .s4-swatch.tp {{ border: 2px solid {c['green']}; }}
+  .s4-swatch.fp {{ border: 2px solid {c['red']}; }}
+  .s4-swatch.fn {{ border: 2px dotted {c['accent']}; }}
+
+  /* Explanatory note */
+  .s4-note {{
+    background: {c['panel_alt']};
+    border: 1px solid {c['border']};
+    border-left: 3px solid {c['accent']};
+    border-radius: 8px; padding: 12px 16px; margin-top: 12px;
+    font-family: {FONTS['mono']}; font-size: 10.5px;
+    color: {c['text_muted']}; line-height: 1.8;
+  }}
+  .s4-note b {{ color: {c['text']}; }}
 </style>
 """
