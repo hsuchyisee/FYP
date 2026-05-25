@@ -43,11 +43,17 @@ def chart_map_overview():
             hovertemplate='%{x}<br>mAP: %{y:.3f}<extra>IoU ' + str(iou) + '</extra>',
         ))
     fig.update_layout(
-        title='mAP @ IoU 0.3 / 0.5 / 0.7 — All Runs',
+        title=dict(text='mAP @ IoU 0.3 / 0.5 / 0.7 — All Runs', font=dict(size=16, family='Inter, sans-serif', color='#111827')),
         barmode='group',
-        yaxis=dict(title='mAP', range=[0, 0.75]),
+        yaxis=dict(title='mAP', range=[0, 0.75], gridcolor='#F3F4F6', linecolor='#E2E8F0'),
+        xaxis=dict(gridcolor='#F3F4F6', linecolor='#E2E8F0'),
         legend_title='IoU Threshold',
+        legend=dict(font=dict(size=12, family='Inter, sans-serif')),
         height=420,
+        plot_bgcolor='#FFFFFF',
+        paper_bgcolor='#FFFFFF',
+        font=dict(family='Inter, sans-serif', color='#374151'),
+        margin=dict(l=60, r=20, t=56, b=60),
     )
     return fig
 
