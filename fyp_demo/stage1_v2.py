@@ -19,7 +19,7 @@ DEFAULT_DATASET_ROOT = "/home/student/Downloads/Camera_LiDAR"
 st.set_page_config(
     page_title="SemanticV2V — Research Dashboard",
     layout="wide",
-    initial_sidebar_state="auto"
+    initial_sidebar_state="collapsed"
 )
 
 # ── CSS (all design tokens live in theme.py) ───────────────────
@@ -27,6 +27,31 @@ st.markdown(
     make_global_css() + make_stage2_css() + make_stage3_css() + make_stage4_css(),
     unsafe_allow_html=True,
 )
+
+# ── Top navigation ─────────────────────────────────────────────
+# This file is the multipage entrypoint, so it is served at "/".
+# pages/analysis.py -> /analysis, pages/tensorboard.py -> /tensorboard.
+st.markdown("""
+<style>
+  /* hide Streamlit's auto page-list; we navigate via the custom tabs */
+  [data-testid="stSidebarNav"] { display: none; }
+  .v2v-nav { display:flex; border-bottom:1.5px solid #E5E7EB;
+             margin:0 0 24px; padding:0; }
+  .v2v-tab { display:inline-block; padding:10px 20px 10px 0;
+             font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:500;
+             color:#6B7280 !important; text-decoration:none !important;
+             border-bottom:2px solid transparent; margin-bottom:-1.5px;
+             margin-right:8px; transition:color .18s, border-color .18s; }
+  .v2v-tab:hover { color:#111827 !important; }
+  .v2v-tab.active { color:#10B981 !important; border-bottom-color:#10B981;
+                    font-weight:600; }
+</style>
+<nav class="v2v-nav">
+  <a href="/" class="v2v-tab active" target="_self">Dashboard</a>
+  <a href="/analysis" class="v2v-tab" target="_self">Analysis</a>
+  <a href="/tensorboard" class="v2v-tab" target="_self">TensorBoard</a>
+</nav>
+""", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -149,22 +174,6 @@ st.markdown("""
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ── Fake filepath bar ──────────────────────────────────────────
-if st.session_state.scenario:
-    sc = st.session_state.scenario
-    filepath_content = f"Camera_LiDAR / {sc['id']}"
-    bar_class = "filled"
-else:
-    filepath_content = "No folder selected"
-    bar_class = ""
-
-st.markdown(f"""
-<div class="filepath-bar">
-  <div class="filepath-icon">📁</div>
-  <div class="filepath-text {bar_class}">{filepath_content}</div>
-</div>
-""", unsafe_allow_html=True)
-
 # ── Scenario selectbox ─────────────────────────────────────────
 _rc = st.session_state.widget_reset_counter
 chosen_key = st.selectbox(
@@ -174,15 +183,10 @@ chosen_key = st.selectbox(
     key=f"scenario_dropdown_{_rc}",
 )
 
-# ── Load button ────────────────────────────────────────────────
-col_btn, col_gap = st.columns([2, 5])
-with col_btn:
-    load_clicked = st.button("▶  Load Scenario", use_container_width=True)
-
 # ── Custom scenario upload ─────────────────────────────────────
 st.markdown(
     '<div style="margin:18px 0 8px;font-family:JetBrains Mono,monospace;'
-    'font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.15em;">'
+    'font-size: 19px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.15em;">'
     '— or upload your own scenario —</div>',
     unsafe_allow_html=True,
 )
@@ -195,26 +199,29 @@ uploaded_zip = st.file_uploader(
     key=f"scenario_zip_upload_{_rc}",
 )
 
-col_up_btn, _ = st.columns([2, 5])
-with col_up_btn:
-    upload_clicked = st.button(
-        "▶  Load Uploaded Scenario",
-        use_container_width=True,
-        disabled=uploaded_zip is None,
-    )
+# ── Single Load button ─────────────────────────────────────────
+col_btn, _ = st.columns([2, 5])
+with col_btn:
+    load_clicked = st.button("▶  Load Scenario", use_container_width=True)
 
-# ── Resolve which input the user activated ─────────────────────
+# ── Resolve input — exactly one source allowed (dropdown XOR upload) ──
 sc_to_load = None
+if load_clicked:
+    has_dropdown = chosen_key != "— Select a scenario folder —"
+    has_upload   = uploaded_zip is not None
 
-if load_clicked and chosen_key != "— Select a scenario folder —":
-    sc_to_load = SCENARIOS[chosen_key]
-
-elif upload_clicked and uploaded_zip is not None:
-    try:
-        sc_to_load = validate_and_extract_zip(uploaded_zip)
-    except ScenarioValidationError as e:
-        st.error(f"❌ Invalid scenario zip: {e}")
-        sc_to_load = None
+    if has_dropdown and has_upload:
+        st.error("Use either the dropdown selection OR an uploaded zip — not both. "
+                 "Clear one and try again.")
+    elif has_dropdown:
+        sc_to_load = SCENARIOS[chosen_key]
+    elif has_upload:
+        try:
+            sc_to_load = validate_and_extract_zip(uploaded_zip)
+        except ScenarioValidationError as e:
+            st.error(f"❌ Invalid scenario zip: {e}")
+    else:
+        st.warning("Select a scenario from the dropdown or upload a .zip first.")
 
 # ── On load (shared by both inputs) ────────────────────────────
 if sc_to_load is not None:
@@ -306,9 +313,9 @@ if st.session_state.stage < 3:
     # Locked state — scenario not yet selected
     st.markdown("""
     <div class="stage2-locked">
-      <div style="font-size:32px;margin-bottom:14px;opacity:0.15;">📡</div>
+      <div style="font-size: 61px;margin-bottom:14px;opacity:0.15;">📡</div>
       STAGE 02 · SCENE INTELLIGENCE<br>
-      <span style="font-size:10px;opacity:0.4;margin-top:6px;display:block;">
+      <span style="font-size: 19px;opacity:0.4;margin-top:6px;display:block;">
         Awaiting scenario input to unlock
       </span>
     </div>
@@ -330,11 +337,10 @@ else:
 
     # ── Stage 3: Model Analysis ───────────────────────────────
     # render_tunnel inside render_stage3 handles the stage 2→3 tunnel.
-    # User clicks "Run Inference Analysis" button to trigger it.
+    # Reads model_results.csv + config diffs from the scenario folder.
     render_stage3(
-        project_root = "/home/student/Downloads/V2X-Real",
-        scenario_id  = st.session_state.scenario["id"]
-        # Local path: "C:/Users/Jess/Downloads/MDS18_GitRepo/FYP/V2X-Real"
+        dataset_root = active_dataset_root,
+        scenario_id  = st.session_state.scenario["id"],
     )
 
     # ── Stage 4: Channel Noise Robustness ─────────────────────

@@ -20,7 +20,7 @@ from pathlib import Path
 import streamlit as st
 
 from theme import COLORS, FONTS
-from utils import render_tunnel
+from utils import render_tunnel, download_icon_html
 from stage4_data import (
     load_noise_data,
     STATUS_BENEFICIAL,
@@ -139,7 +139,7 @@ def _render_metric_expander(current: dict):
                 st.markdown(f"""
                 <div class="s4-metric-card" style="min-width:0;">
                   <div class="s4-metric-label">mAP @ {iou}</div>
-                  <div class="s4-metric-val" style="font-size:22px;">{m[iou]:.3f}</div>
+                  <div class="s4-metric-val" style="font-size: 42px;">{m[iou]:.3f}</div>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -218,7 +218,7 @@ def render_stage4(dataset_root: str, scenario_id: str):
              box-shadow:0 0 12px {g},0 0 24px {g}88;
              position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);"></div>
       </div>
-      <div style="font-family:{FONTS['mono']};font-size:11px;
+      <div style="font-family:{FONTS['mono']};font-size: 21px;
            color:{COLORS['green_dark']};margin-top:12px;text-align:center;line-height:1.8;">
         100%<br>✓ Noise sweep ready
       </div>
@@ -229,10 +229,18 @@ def render_stage4(dataset_root: str, scenario_id: str):
     levels = data["levels"]
     slider_labels = [lvl["slider_label"] for lvl in levels]
 
+    snr_download = download_icon_html(
+        data.get("csv_path"),
+        "Download noise-sweep metrics (CSV)",
+        "ap_vs_snr_intermediate_rayleigh_awgn.csv",
+    )
     st.markdown(f"""
-    <div style="font-family:{FONTS['mono']};font-size:10px;
-         color:{COLORS['accent']};text-transform:uppercase;letter-spacing:0.15em;
-         margin:8px 0 4px;">Channel SNR Level</div>
+    <div class="dl-header" style="margin:8px 0 4px;">
+      <div style="font-family:{FONTS['mono']};font-size: 19px;
+           color:{COLORS['accent']};text-transform:uppercase;letter-spacing:0.15em;">
+        Channel SNR Level</div>
+      {snr_download}
+    </div>
     """, unsafe_allow_html=True)
 
     selected_label = st.select_slider(

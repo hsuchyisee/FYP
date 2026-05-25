@@ -1,287 +1,288 @@
 import streamlit as st
-import yaml
 import time
 from pathlib import Path
-from utils import render_tunnel
+from utils import render_tunnel, download_icon_html
 from theme import COLORS, FONTS
+from model_results import (
+    load_model_results, load_config_diff, load_frame_comparison,
+    BEST_MODEL, IOUS, FC_METRICS,
+)
 
 
 # ══════════════════════════════════════════════════════════════
-# MODEL DATA — replace map_raw/map_tuned/f1_raw/f1_tuned with
-# your real inference values after running inference.py
-# tuned_params: hardcode "before → after" strings — no need
-# to read two config files, you know what you changed
+# Stage 3 reads per-model mAP from {scenario}/model_results.csv and
+# tuned hyperparameters by diffing {model}_raw vs {model}_improved
+# config.yaml — both via the model_results loader.
 # ══════════════════════════════════════════════════════════════
-MODEL_RESULTS = {
-    "early": {
-        "label":       "Early Fusion",
-        "map_raw":     0.61, "map_tuned": 0.82,
-        "f1_raw":      0.58, "f1_tuned":  0.79,
-        "log_dir":     "logs/point_pillar_early_fusion",
-        "tuned_params": [
-            ("Learning Rate",  "0.001",       "0.0005"),
-            ("Anchor Sizes",   "default",     "[1.6, 3.9, 1.56]"),
-            ("Epochs",         "30",          "40"),
-            ("LR Step Size",   "10",          "[15, 25]"),
-        ],
-        "justification": (
-            "Early Fusion aggregates raw LiDAR point clouds from all agents before "
-            "feature extraction, maximising information density. After tuning the "
-            "learning rate schedule and anchor box sizes to match V2X-Real object "
-            "distribution, AP improved by 34% in this urban intersection scenario."
-        ),
-    },
-    "late": {
-        "label":       "Late Fusion",
-        "map_raw":     0.54, "map_tuned": 0.71,
-        "f1_raw":      0.51, "f1_tuned":  0.68,
-        "log_dir":     "logs/point_pillar_late_fusion",
-        "tuned_params": [
-            ("Learning Rate",  "0.002",  "0.001"),
-            ("Batch Size",     "2",      "4"),
-            ("Epochs",         "30",     "35"),
-            ("Dropout",        "0.0",    "0.1"),
-        ],
-        "justification": (
-            "Late Fusion performs independent per-agent detection before sharing "
-            "results. Communication overhead is minimal — only bounding box proposals "
-            "are transmitted. Robust but misses occlusion benefits of earlier fusion."
-        ),
-    },
-    "intermediate": {
-        "label":       "Intermediate Fusion",
-        "map_raw":     0.66, "map_tuned": 0.85,
-        "f1_raw":      0.63, "f1_tuned":  0.81,
-        "log_dir":     "logs/point_pillar_intermediate_fusion",
-        "tuned_params": [
-            ("Learning Rate",   "0.001",  "0.001"),
-            ("Feature Dim",     "128",    "256"),
-            ("Attention Heads", "4",      "8"),
-            ("Epochs",          "30",     "45"),
-        ],
-        "justification": (
-            "Intermediate Fusion shares compressed feature maps between agents — "
-            "balancing information richness with communication efficiency. The "
-            "attention mechanism across agent tokens captures spatial dependencies "
-            "invisible to single-vehicle perception, achieving the highest mAP "
-            "across all tested fusion strategies on this scenario."
-        ),
-    },
-}
-
-BEST_MODEL = "intermediate"  # ← set to whichever wins after running inference
 
 
-def load_model_config(log_dir: str, project_root: str) -> dict:
-    """Read real hyperparameter values from trained model config.yaml if available."""
-    config_path = Path(project_root) / log_dir / "config.yaml"
-    if not config_path.exists():
-        return {}
-    with open(config_path) as f:
-        cfg = yaml.safe_load(f)
-    params = {}
-    try: params["lr"]         = cfg.get("optimizer", {}).get("lr", "N/A")
-    except: params["lr"]      = "N/A"
-    try: params["batch_size"] = cfg.get("train_params", {}).get("batch_size", "N/A")
-    except: params["batch_size"] = "N/A"
-    try: params["epochs"]     = cfg.get("train_params", {}).get("epoches", "N/A")
-    except: params["epochs"]  = "N/A"
-    try: params["max_cav"]    = cfg.get("model", {}).get("args", {}).get("max_cav", "N/A")
-    except: params["max_cav"] = "N/A"
-    try: params["lr_steps"]   = str(cfg.get("lr_scheduler", {}).get("step_size", "N/A"))
-    except: params["lr_steps"] = "N/A"
-    return params
-
-
-def _card_html(key: str, map_r: float, map_t: float,
-               f1_r: float, f1_t: float, glowing: bool = False) -> str:
+def _card_html(label: str, raw: dict, improved: dict, glowing: bool = False) -> str:
     """
-    Build HTML for one model card.
-    Layout: model name → mAP raw → mAP improved (Δ inline) → F1 raw → F1 improved (Δ inline)
-    Reused by both animation loop and static final render.
+    Build HTML for one model card: one row per IoU showing raw → improved mAP
+    with a signed delta. Reused by both the animation loop and the static render.
     """
-    model     = MODEL_RESULTS[key]
-    is_best   = glowing
-    card_cls  = "mc-card best-glow" if glowing else "mc-card"
-    name_cls  = "mc-model-name best" if glowing else "mc-model-name"
-    imp_cls   = "mc-row-val best-val" if glowing else "mc-row-val improved"
-    d_map     = map_t - map_r
-    d_f1      = f1_t  - f1_r
-    d_map_str = f'<span class="mc-delta-inline">↑ +{d_map:.2f}</span>' if d_map > 0 else ""
-    d_f1_str  = f'<span class="mc-delta-inline">↑ +{d_f1:.2f}</span>'  if d_f1  > 0 else ""
+    card_cls = "mc-card best-glow" if glowing else "mc-card"
+    name_cls = "mc-model-name best" if glowing else "mc-model-name"
+    val_cls  = "mc-row-val best-val" if glowing else "mc-row-val improved"
 
-    return f"""
-    <div class="{card_cls}">
-      <div class="{name_cls}">{model["label"]}</div>
+    rows = ""
+    for iou in IOUS:
+        r  = raw[iou]
+        im = improved[iou]
+        d  = im - r
+        if d > 0.0005:
+            delta = f'<span class="mc-delta-inline up">↑ +{d:.3f}</span>'
+        elif d < -0.0005:
+            delta = f'<span class="mc-delta-inline down">↓ {d:.3f}</span>'
+        else:
+            delta = ""
+        rows += f"""
       <div class="mc-row">
-        <span class="mc-row-label">mAP raw</span>
-        <span class="mc-row-val">{map_r:.2f}</span>
-      </div>
-      <div class="mc-row">
-        <span class="mc-row-label">mAP improved</span>
-        <span class="{imp_cls}">{map_t:.2f}{d_map_str}</span>
-      </div>
-      <div class="mc-row">
-        <span class="mc-row-label">F1 raw</span>
-        <span class="mc-row-val">{f1_r:.2f}</span>
-      </div>
-      <div class="mc-row">
-        <span class="mc-row-label">F1 improved</span>
-        <span class="{imp_cls}">{f1_t:.2f}{d_f1_str}</span>
-      </div>
-    </div>
-    """
+        <span class="mc-row-label">mAP@{iou}</span>
+        <span class="mc-row-vals">
+          <span class="mc-row-raw">{r:.3f}</span>
+          <span class="mc-row-arrow">→</span>
+          <span class="{val_cls}">{im:.3f}</span>
+          {delta}
+        </span>
+      </div>"""
+
+    return f'<div class="{card_cls}"><div class="{name_cls}">{label}</div>{rows}</div>'
 
 
-def render_running_cards():
-    """
-    Animate all 3 model cards concurrently: values count up 0.00 → target.
-    Then pulse the best model card with a green glow to signal selection.
-    Uses st.empty() placeholders — only card content updates, not full page.
-    """
-    keys  = list(MODEL_RESULTS.keys())
-    steps = 50
-
-    st.markdown("""
-    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;
+_RESULTS_HEADER = """
+    <div style="font-family:'JetBrains Mono',monospace;font-size: 19px;
          color:#1e3a5f;text-transform:uppercase;letter-spacing:0.15em;
          margin-bottom:16px;">Inference Results — All Fusion Strategies</div>
-    """, unsafe_allow_html=True)
+    """
 
-    col1, col2, col3 = st.columns(3)
-    phs = {}
-    for col, key in zip([col1, col2, col3], keys):
-        phs[key] = col.empty()
 
-    # Count up animation
+def render_running_cards(models: dict, best_model: str):
+    """
+    Animate the model cards concurrently: mAP values count up 0.00 → target
+    across all IoUs. Then pulse the best model card with a green glow.
+    Uses st.empty() placeholders — only card content updates, not full page.
+    """
+    keys  = list(models.keys())
+    steps = 50
+
+    st.markdown(_RESULTS_HEADER, unsafe_allow_html=True)
+
+    cols = st.columns(len(keys))
+    phs = {key: col.empty() for col, key in zip(cols, keys)}
+
+    def scaled(d, t):
+        return {iou: d[iou] * t for iou in IOUS}
+
+    # Count-up animation
     for i in range(steps + 1):
         t = i / steps
         for key in keys:
-            m = MODEL_RESULTS[key]
-            phs[key].markdown(_card_html(
-                key,
-                round(m["map_raw"]   * t, 2),
-                round(m["map_tuned"] * t, 2),
-                round(m["f1_raw"]    * t, 2),
-                round(m["f1_tuned"]  * t, 2),
-            ), unsafe_allow_html=True)
+            m = models[key]
+            phs[key].markdown(
+                _card_html(m["label"], scaled(m["raw"], t), scaled(m["improved"], t)),
+                unsafe_allow_html=True,
+            )
         time.sleep(0.03)
 
     time.sleep(0.4)
 
-    # Show final values without glow
-    for key in keys:
-        m = MODEL_RESULTS[key]
-        phs[key].markdown(_card_html(
-            key, m["map_raw"], m["map_tuned"],
-            m["f1_raw"], m["f1_tuned"]
-        ), unsafe_allow_html=True)
-
-    time.sleep(0.3)
-
     # Pulse best card 2x then lock glow on
-    bk = BEST_MODEL
-    bm = MODEL_RESULTS[bk]
+    bk = best_model
+    bm = models[bk]
     for _ in range(2):
         time.sleep(0.18)
-        phs[bk].markdown(_card_html(bk, bm["map_raw"], bm["map_tuned"],
-                                    bm["f1_raw"], bm["f1_tuned"], glowing=False),
+        phs[bk].markdown(_card_html(bm["label"], bm["raw"], bm["improved"], glowing=False),
                          unsafe_allow_html=True)
         time.sleep(0.18)
-        phs[bk].markdown(_card_html(bk, bm["map_raw"], bm["map_tuned"],
-                                    bm["f1_raw"], bm["f1_tuned"], glowing=True),
+        phs[bk].markdown(_card_html(bm["label"], bm["raw"], bm["improved"], glowing=True),
                          unsafe_allow_html=True)
 
     # Final state — best glowing, others static
     for key in keys:
-        m = MODEL_RESULTS[key]
-        phs[key].markdown(_card_html(
-            key, m["map_raw"], m["map_tuned"],
-            m["f1_raw"], m["f1_tuned"],
-            glowing=(key == BEST_MODEL)
-        ), unsafe_allow_html=True)
+        m = models[key]
+        phs[key].markdown(
+            _card_html(m["label"], m["raw"], m["improved"], glowing=(key == bk)),
+            unsafe_allow_html=True,
+        )
 
 
-def _render_static_cards():
+def _render_static_cards(models: dict, best_model: str):
     """Render final static card state — used on reruns after animation."""
-    st.markdown("""
-    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;
-         color:#1e3a5f;text-transform:uppercase;letter-spacing:0.15em;
-         margin-bottom:16px;">Inference Results — All Fusion Strategies</div>
-    """, unsafe_allow_html=True)
+    st.markdown(_RESULTS_HEADER, unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
-    for col, key in zip([col1, col2, col3], MODEL_RESULTS.keys()):
-        m = MODEL_RESULTS[key]
+    keys = list(models.keys())
+    cols = st.columns(len(keys))
+    for col, key in zip(cols, keys):
+        m = models[key]
         with col:
-            st.markdown(_card_html(
-                key, m["map_raw"], m["map_tuned"],
-                m["f1_raw"], m["f1_tuned"],
-                glowing=(key == BEST_MODEL)
-            ), unsafe_allow_html=True)
+            st.markdown(
+                _card_html(m["label"], m["raw"], m["improved"], glowing=(key == best_model)),
+                unsafe_allow_html=True,
+            )
 
 
-def _render_rec_card(project_root: str):
-    """Render the recommendation card for the best model."""
-    best      = MODEL_RESULTS[BEST_MODEL]
-    cfg       = load_model_config(best["log_dir"], project_root)
-    delta_map = best["map_tuned"] - best["map_raw"]
-    delta_f1  = best["f1_tuned"]  - best["f1_raw"]
-    pct_up    = (delta_map / best["map_raw"] * 100) if best["map_raw"] > 0 else 0
-
-    # Tuned params table — prefer real config.yaml, fallback to hardcoded list
-    if cfg:
-        param_rows = "".join([
-            f'<span class="ck">{k:<20}</span> <span class="cv">{v}</span><br>'
-            for k, v in cfg.items()
-        ])
-    else:
-        param_rows = "".join([
-            f'<span class="ck">{p[0]:<20}</span> '
-            f'<span style="color:{COLORS["text_dim"]};">{p[1]}</span>'
-            f' <span style="color:{COLORS["text_faint"]};">→</span> '
-            f'<span class="cv">{p[2]}</span><br>'
-            for p in best["tuned_params"]
-        ])
-
+def _render_baseline_line(baseline: dict):
+    """Single-model (No Fusion) baseline reference line below the cards."""
+    if not baseline:
+        return
+    b05 = baseline["mAP"][0.5]
     st.markdown(f"""
-    <div class="rec-card">
-      <div class="rec-eyebrow">✓ Recommended Model · Best for this scenario</div>
-      <div class="rec-model-name">{best["label"]}</div>
-
-      <div class="rec-delta-cards">
-        <div class="rec-delta-card">
-          <div class="rec-delta-val">+{delta_map:.2f}</div>
-          <div class="rec-delta-label">Δ mAP</div>
-        </div>
-        <div class="rec-delta-card">
-          <div class="rec-delta-val">+{delta_f1:.2f}</div>
-          <div class="rec-delta-label">Δ F1</div>
-        </div>
-        <div class="rec-delta-card">
-          <div class="rec-delta-val">{pct_up:.0f}%</div>
-          <div class="rec-delta-label">AP Gain</div>
-        </div>
-        <div class="rec-delta-card">
-          <div class="rec-delta-val">{best["map_tuned"]:.2f}</div>
-          <div class="rec-delta-label">Best mAP</div>
-        </div>
-      </div>
-
-      <hr class="rec-divider">
-      <div class="rec-section-label">Tuned Hyperparameters</div>
-      <div class="config-block">{param_rows}</div>
-
-      <hr class="rec-divider">
-      <div class="rec-section-label">Justification</div>
-      <div class="rec-body">{best["justification"]}</div>
+    <div style="font-family:{FONTS['mono']};font-size: 21px;color:{COLORS['text_muted']};
+         background:{COLORS['panel_alt']};border:1px dashed {COLORS['border_strong']};
+         border-radius:8px;padding:8px 14px;margin:14px 0 4px;line-height:1.6;">
+      {baseline['label']} baseline (single-model): <b style="color:{COLORS['text']};">mAP@0.5 = {b05:.3f}</b>
+      &nbsp;— every fusion strategy exceeds this, confirming cooperation helps.
     </div>
     """, unsafe_allow_html=True)
 
 
-def render_stage3(project_root: str, scenario_id: str):
+def _render_rec_card(data: dict, dataset_root: str, scenario_id: str):
+    """Render the recommendation card for the best model."""
+    best_key = data["best_model"]
+    best     = data["models"][best_key]
+    raw, imp = best["raw"], best["improved"]
+
+    deltas    = {iou: imp[iou] - raw[iou] for iou in IOUS}
+    best_map5 = imp[0.5]
+    ap_gain   = (deltas[0.5] / raw[0.5] * 100) if raw[0.5] > 0 else 0
+
+    delta_cards = "".join(
+        f"""
+        <div class="rec-delta-card">
+          <div class="rec-delta-val">{'+' if deltas[iou] >= 0 else ''}{deltas[iou]:.3f}</div>
+          <div class="rec-delta-label">Δ mAP@{iou}</div>
+        </div>"""
+        for iou in IOUS
+    )
+    delta_cards += f"""
+        <div class="rec-delta-card">
+          <div class="rec-delta-val">{best_map5:.3f}</div>
+          <div class="rec-delta-label">Best mAP@0.5</div>
+        </div>
+        <div class="rec-delta-card">
+          <div class="rec-delta-val">{ap_gain:.0f}%</div>
+          <div class="rec-delta-label">AP Gain @0.5</div>
+        </div>"""
+
+    # Tuned hyperparameters — detected by diffing real raw vs improved config.yaml
+    diff = load_config_diff(dataset_root, scenario_id, best_key)
+    if diff["available"]:
+        param_rows = "".join(
+            f'<span class="ck">{label}</span> '
+            f'<span style="color:{COLORS["text_dim"]};">{rv}</span> '
+            f'<span style="color:{COLORS["text_faint"]};">→</span> '
+            f'<span class="cv">{iv}</span><br>'
+            for label, rv, iv in diff["changes"]
+        )
+        hp_block = f'<div class="config-block">{param_rows}</div>'
+    else:
+        hp_block = (f'<div class="config-block" style="color:{COLORS["text_faint"]};">'
+                    f'Config diff unavailable for this scenario.</div>')
+
+    download = download_icon_html(
+        data.get("csv_path"),
+        "Download all model results (CSV)",
+        "model_results.csv",
+        css_class="rec-download",
+    )
+
+    st.markdown(f"""
+    <div class="rec-card">
+      {download}
+      <div class="rec-eyebrow">✓ Recommended Model · Best for this scenario</div>
+      <div class="rec-model-name">{best["label"]}</div>
+
+      <div class="rec-delta-cards">{delta_cards}
+      </div>
+
+      <hr class="rec-divider">
+      <div class="rec-section-label">Tuned Hyperparameters · detected from config.yaml</div>
+      {hp_block}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def _render_frame_comparison(fc: dict):
+    """Frame-by-frame Overall-metric comparison table + stacked detection images.
+    Shows the progression: no cooperation → cooperation → cooperation + tuning."""
+    if not fc["available"]:
+        return
+
+    stages = fc["stages"]
+
+    download = download_icon_html(
+        fc.get("csv_path"),
+        "Download frame metrics (CSV)",
+        "overall_metrics.csv",
+    )
+
+    st.markdown(
+        f'<hr style="border:none;border-top:1px solid {COLORS["border"]};margin:28px 0;">',
+        unsafe_allow_html=True,
+    )
+    st.markdown(f"""
+    <div class="dl-header" style="margin-bottom:8px;">
+      <div style="font-family:{FONTS['mono']};font-size: 19px;
+           color:{COLORS['accent']};text-transform:uppercase;letter-spacing:0.15em;">
+        Frame-by-Frame Comparison · Frame 000000</div>
+      {download}
+    </div>
+    <div style="font-size: 26px;color:{COLORS['text_muted']};margin-bottom:16px;line-height:1.7;">
+      Per-frame detection quality across the perception progression — no cooperation →
+      cooperative perception → cooperative perception with hyperparameter tuning.
+      Best value per metric highlighted.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Header row
+    head_cells = "".join(
+        f'<div class="fc-cell">{s["label"]}<span>{s["sub"]}</span></div>'
+        for s in stages
+    )
+    rows_html = (f'<div class="fc-row fc-head"><div class="fc-metric-label"></div>'
+                 f'{head_cells}</div>')
+
+    # One row per metric, best value highlighted
+    for col, label, higher_better in FC_METRICS:
+        vals = [s["metrics"][col] for s in stages]
+        best = max(vals) if higher_better else min(vals)
+        is_int = col in ("tp", "fp", "fn")
+        cells = ""
+        for v in vals:
+            sel  = " best" if v == best else ""
+            disp = f"{int(v)}" if is_int else f"{v:.2f}"
+            cells += f'<div class="fc-cell{sel}">{disp}</div>'
+        row_cls = "fc-row f1" if col == "f1" else "fc-row"
+        rows_html += (f'<div class="{row_cls}"><div class="fc-metric-label">{label}</div>'
+                      f'{cells}</div>')
+
+    st.markdown(f'<div class="fc-table">{rows_html}</div>', unsafe_allow_html=True)
+
+    # Stacked detection frames (full container width)
+    for s in stages:
+        st.markdown(
+            f'<div class="fc-img-label">{s["label"]} &nbsp;<span>· {s["sub"]}</span></div>',
+            unsafe_allow_html=True,
+        )
+        if s["image"]:
+            st.image(s["image"], use_container_width=True)
+        else:
+            st.markdown(
+                f'<div style="font-family:{FONTS["mono"]};font-size: 21px;'
+                f'color:{COLORS["text_faint"]};padding:20px;text-align:center;'
+                f'border:1px dashed {COLORS["border_strong"]};border-radius:8px;">'
+                f'Frame image unavailable</div>',
+                unsafe_allow_html=True,
+            )
+
+
+def render_stage3(dataset_root: str, scenario_id: str):
     """
     Main Stage 3 render function. Call from stage1_v2.py after render_stage2().
+
+    Reads per-model mAP from {scenario}/model_results.csv and tuned
+    hyperparameters from {model}_raw vs {model}_improved config.yaml.
 
     Session state keys managed:
       s3_inference_started  : user clicked Run Inference
@@ -294,6 +295,8 @@ def render_stage3(project_root: str, scenario_id: str):
                 "s3_cards_animated", "s3_video_started", "s3_video_tunnel_done"]:
         if key not in st.session_state:
             st.session_state[key] = False
+
+    data = load_model_results(dataset_root, scenario_id)
 
     # Stage 3 header
     st.markdown("""
@@ -347,25 +350,33 @@ def render_stage3(project_root: str, scenario_id: str):
              box-shadow:0 0 12px {g},0 0 24px {g}88;
              position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);"></div>
       </div>
-      <div style="font-family:{FONTS['mono']};font-size:11px;
+      <div style="font-family:{FONTS['mono']};font-size: 21px;
            color:{COLORS['green_dark']};margin-top:12px;text-align:center;line-height:1.8;">
         100%<br>✓ Inference ready
       </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Step 3: Card animation (once) then static ──────────────
-    if not st.session_state.s3_cards_animated:
-        render_running_cards()
-        st.session_state.s3_cards_animated = True
-        st.rerun()
+    # ── Step 3: Cards + recommendation (needs the results CSV) ──
+    if data["available"]:
+        if not st.session_state.s3_cards_animated:
+            render_running_cards(data["models"], data["best_model"])
+            st.session_state.s3_cards_animated = True
+            st.rerun()
+        else:
+            _render_static_cards(data["models"], data["best_model"])
+
+        _render_baseline_line(data["baseline"])
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ── Step 4: Recommendation card ───────────────────────
+        _render_rec_card(data, dataset_root, scenario_id)
     else:
-        _render_static_cards()
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # ── Step 4: Recommendation card ───────────────────────────
-    _render_rec_card(project_root)
+        st.info(
+            "Inference results not available for this scenario "
+            f"({data['reason']}). Showing detection output only."
+        )
 
     # ── Step 5: LiDAR video with tunnel ───────────────────────
     st.markdown(
@@ -408,7 +419,7 @@ def render_stage3(project_root: str, scenario_id: str):
                  box-shadow:0 0 12px {g2},0 0 24px {g2}88;
                  position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);"></div>
           </div>
-          <div style="font-family:{FONTS['mono']};font-size:11px;
+          <div style="font-family:{FONTS['mono']};font-size: 21px;
                color:{COLORS['green_dark']};margin-top:12px;text-align:center;line-height:1.8;">
             100%<br>✓ LiDAR detection ready
           </div>
@@ -416,21 +427,28 @@ def render_stage3(project_root: str, scenario_id: str):
         """, unsafe_allow_html=True)
 
         st.markdown(f"""
-        <div style="font-family:{FONTS['mono']};font-size:10px;
+        <div style="font-family:{FONTS['mono']};font-size: 19px;
              color:{COLORS['accent']};text-transform:uppercase;letter-spacing:0.15em;
              margin-bottom:12px;">LiDAR Detection — Best Model · Live Output</div>
-        <div style="font-size:13px;color:{COLORS['text_muted']};margin-bottom:16px;line-height:1.7;">
+        <div style="font-size: 26px;color:{COLORS['text_muted']};margin-bottom:16px;line-height:1.7;">
           Bird's-eye-view cooperative detection from the recommended model.
           3D bounding boxes show detected objects across all cooperating agents.
         </div>
         """, unsafe_allow_html=True)
 
-        video_path = Path("data/videos") / BEST_MODEL / f"{scenario_id}.mp4"
-        if not video_path.exists():
-            video_path = Path("data/videos") / BEST_MODEL / "scene1.mp4"
+        # Best model's detection video lives in the scenario folder:
+        #   {dataset_root}/{scenario_id}/{BEST_MODEL}_improved/{scenario_id}.mp4
+        video_path = (Path(dataset_root) / scenario_id
+                      / f"{BEST_MODEL}_improved" / f"{scenario_id}.mp4")
 
         if video_path.exists():
             with open(video_path, "rb") as f:
                 st.video(f.read(), autoplay=True, loop=True, muted=True)
         else:
-            st.info(f"Place LiDAR detection video at: data/videos/{BEST_MODEL}/{scenario_id}.mp4")
+            st.info(
+                "LiDAR detection video not available for this scenario "
+                f"(expected at {BEST_MODEL}_improved/{scenario_id}.mp4)."
+            )
+
+        # ── Step 6: Frame-by-frame comparison ─────────────────
+        _render_frame_comparison(load_frame_comparison(dataset_root, scenario_id))

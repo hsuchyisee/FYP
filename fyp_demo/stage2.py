@@ -170,7 +170,7 @@ def render_stage2(scenario_id: str, dataset_root: str):
     type_counts = Counter(obj_types)
 
     st.markdown(f"""
-    <div style="font-family:{FONTS['mono']};font-size:10px;
+    <div style="font-family:{FONTS['mono']};font-size: 19px;
          color:{COLORS['accent']};text-transform:uppercase;letter-spacing:0.15em;
          margin-bottom:12px;">Scene Statistics · Frame 000000</div>
     """, unsafe_allow_html=True)
@@ -187,11 +187,11 @@ def render_stage2(scenario_id: str, dataset_root: str):
             st.markdown(f"""
             <div style="background:{COLORS['panel']};border:1px solid {COLORS['border']};border-radius:10px;
                  padding:14px 12px;text-align:center;box-shadow:0 1px 3px rgba(15,23,42,0.04);">
-              <div style="font-family:{FONTS['mono']};font-size:26px;
+              <div style="font-family:{FONTS['mono']};font-size: 50px;
                    font-weight:700;color:{color};line-height:1;margin-bottom:6px;">
                 {value}
               </div>
-              <div style="font-size:10px;color:{COLORS['text_dim']};text-transform:uppercase;
+              <div style="font-size: 19px;color:{COLORS['text_dim']};text-transform:uppercase;
                    letter-spacing:0.08em;font-family:{FONTS['mono']};
                    line-height:1.4;">{label}</div>
             </div>
@@ -212,7 +212,7 @@ def render_stage2(scenario_id: str, dataset_root: str):
     obj_sentence = f' <span style="color:{COLORS["text_faint"]};">·</span> '.join(obj_parts)
     st.markdown(f"""
     <div style="margin:12px 0 28px;line-height:2.5;">
-      <span style="font-family:{FONTS['mono']};font-size:10px;
+      <span style="font-family:{FONTS['mono']};font-size: 19px;
             color:{COLORS['accent']};text-transform:uppercase;letter-spacing:0.1em;
             margin-right:12px;">Objects detected</span>
       {obj_sentence}
@@ -233,7 +233,7 @@ def render_stage2(scenario_id: str, dataset_root: str):
     vehicle_agents = [a for a in agents_data if not a["is_infra"]]
 
     st.markdown(f"""
-    <div style="font-family:{FONTS['mono']};font-size:10px;
+    <div style="font-family:{FONTS['mono']};font-size: 19px;
          color:{COLORS['accent']};text-transform:uppercase;letter-spacing:0.15em;
          margin-bottom:20px;">Agent Details &amp; Camera Feeds · Frame 000000</div>
     """, unsafe_allow_html=True)

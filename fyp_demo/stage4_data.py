@@ -158,6 +158,7 @@ def load_noise_data(dataset_root: str, scenario_id: str) -> dict:
     return {
         "available":      True,
         "reason":         None,
+        "csv_path":       str(csv_path),
         "model":          MODEL,
         "noise_type":     NOISE_TYPE,
         "ego_only_map05": ego_only_map05,

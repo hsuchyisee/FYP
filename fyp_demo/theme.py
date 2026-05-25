@@ -86,7 +86,7 @@ def make_global_css() -> str:
     color: {c['text']};
   }}
   .stApp {{ background-color: {c['bg']}; }}
-  .block-container {{ padding-top: 32px; max-width: 1100px; }}
+  .block-container {{ padding-top: 32px; max-width: 1300px; }}
   #MainMenu, footer, header {{ visibility: hidden; }}
 
   /* Hero */
@@ -111,14 +111,14 @@ def make_global_css() -> str:
   }}
   .hero-eyebrow {{
     font-family: {FONTS['mono']};
-    font-size: 11px;
+    font-size: 21px;
     color: {c['accent']};
     letter-spacing: 0.2em;
     text-transform: uppercase;
     margin-bottom: 14px;
   }}
   .hero-title {{
-    font-size: 38px;
+    font-size: 46px;
     font-weight: 600;
     color: {c['text']};
     line-height: 1.2;
@@ -126,7 +126,7 @@ def make_global_css() -> str:
   }}
   .hero-title span {{ color: {c['accent']}; }}
   .hero-sub {{
-    font-size: 14px;
+    font-size: 27px;
     color: {c['text_muted']};
     max-width: 560px;
     line-height: 1.8;
@@ -144,20 +144,20 @@ def make_global_css() -> str:
   .stage-box.active {{ border-color: {c['border_accent']}; }}
   .stage-label {{
     font-family: {FONTS['mono']};
-    font-size: 10px;
+    font-size: 19px;
     color: {c['accent']};
     letter-spacing: 0.18em;
     text-transform: uppercase;
     margin-bottom: 8px;
   }}
   .stage-title {{
-    font-size: 20px;
+    font-size: 38px;
     font-weight: 600;
     color: {c['text']};
     margin-bottom: 6px;
   }}
   .stage-sub {{
-    font-size: 13px;
+    font-size: 26px;
     color: {c['text_dim']};
     margin-bottom: 24px;
     line-height: 1.6;
@@ -175,14 +175,14 @@ def make_global_css() -> str:
     margin-bottom: 16px;
     overflow: hidden;
     font-family: {FONTS['mono']};
-    font-size: 12px;
+    font-size: 22px;
   }}
   .filepath-icon {{
     background: {c['accent_soft']};
     border-right: 1px solid {c['border_strong']};
     padding: 10px 14px;
     color: {c['accent']};
-    font-size: 14px;
+    font-size: 27px;
   }}
   .filepath-text {{
     flex: 1;
@@ -203,17 +203,17 @@ def make_global_css() -> str:
     padding: 16px 20px;
     margin-top: 16px;
     font-family: {FONTS['mono']};
-    font-size: 12px;
+    font-size: 22px;
   }}
   .scenario-detected .s-label {{
     color: {c['text_dim']};
-    font-size: 10px;
+    font-size: 19px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     margin-bottom: 4px;
   }}
-  .scenario-detected .s-value {{ color: {c['accent_dark']}; font-size: 15px; font-weight: 600; margin-bottom: 8px; }}
-  .scenario-detected .s-meta  {{ color: {c['text_muted']}; font-size: 11px; line-height: 2.0; }}
+  .scenario-detected .s-value {{ color: {c['accent_dark']}; font-size: 29px; font-weight: 600; margin-bottom: 8px; }}
+  .scenario-detected .s-meta  {{ color: {c['text_muted']}; font-size: 21px; line-height: 2.0; }}
   .scenario-detected .s-meta span {{ color: {c['text_dim']}; }}
 
   /* Stage 2 locked */
@@ -225,7 +225,7 @@ def make_global_css() -> str:
     text-align: center;
     color: {c['text_faint']};
     font-family: {FONTS['mono']};
-    font-size: 12px;
+    font-size: 22px;
     letter-spacing: 0.1em;
   }}
 
@@ -235,7 +235,7 @@ def make_global_css() -> str:
     border: 1px solid {c['border_strong']} !important;
     border-radius: 8px !important;
     font-family: {FONTS['mono']} !important;
-    font-size: 12px !important;
+    font-size: 22px !important;
     color: {c['accent_dark']} !important;
   }}
 
@@ -245,7 +245,7 @@ def make_global_css() -> str:
     border: 1px solid {c['accent']} !important;
     color: #ffffff !important;
     font-family: {FONTS['mono']} !important;
-    font-size: 12px !important;
+    font-size: 22px !important;
     border-radius: 8px !important;
     padding: 8px 20px !important;
     letter-spacing: 0.05em !important;
@@ -265,7 +265,7 @@ def make_global_css() -> str:
   }}
   .section-num {{
     font-family: {FONTS['mono']};
-    font-size: 11px;
+    font-size: 21px;
     color: {c['accent']};
     background: {c['accent_soft']};
     padding: 3px 8px;
@@ -273,7 +273,7 @@ def make_global_css() -> str:
     letter-spacing: 0.05em;
   }}
   .section-title {{
-    font-size: 18px;
+    font-size: 35px;
     font-weight: 600;
     color: {c['text']};
   }}
@@ -299,20 +299,20 @@ def make_global_css() -> str:
     width: 44px; height: 44px;
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
+    font-size: 38px;
     margin-bottom: 8px;
   }}
   .pipe-icon.active   {{ background: {c['accent_soft']}; box-shadow: 0 0 16px {c['accent']}22; }}
   .pipe-icon.inactive {{ background: {c['panel_alt']}; }}
   .pipe-label {{
-    font-size: 11px;
+    font-size: 21px;
     color: {c['text_muted']};
     text-align: center;
     font-family: {FONTS['mono']};
   }}
   .pipe-label.active {{ color: {c['accent_dark']}; }}
   .pipe-arrow {{
-    font-size: 18px;
+    font-size: 35px;
     color: {c['border_strong']};
     margin: 0 6px;
     padding-bottom: 20px;
@@ -322,6 +322,33 @@ def make_global_css() -> str:
     border-top: 1px solid {c['border']};
     margin: 24px 0;
   }}
+
+  /* Reusable compact download icon (shares a header row, with hover tooltip) */
+  .dl-header {{
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }}
+  .dl-icon {{
+    flex: 0 0 auto; position: relative;
+    width: 30px; height: 30px; border-radius: 7px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: {c['panel']}; border: 1px solid {c['border_strong']};
+    color: {c['accent']}; text-decoration: none; font-size: 27px;
+    cursor: pointer; transition: background 0.15s, box-shadow 0.15s;
+  }}
+  .dl-icon:hover {{
+    background: {c['accent_soft']};
+    box-shadow: 0 0 12px {c['accent']}44;
+  }}
+  .dl-icon::after {{
+    content: attr(data-tip);
+    position: absolute; top: 50%; right: 120%; transform: translateY(-50%);
+    white-space: nowrap; background: {c['text']}; color: #ffffff;
+    font-family: {FONTS['mono']}; font-size: 19px;
+    padding: 5px 9px; border-radius: 6px;
+    opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 10;
+  }}
+  .dl-icon:hover::after {{ opacity: 1; }}
 
   /* Shared animation */
   @keyframes fadeIn {{
@@ -340,7 +367,7 @@ def make_stage2_css() -> str:
   .obj-pill {{
     display: inline-block;
     font-family: {FONTS['mono']};
-    font-size: 10px;
+    font-size: 19px;
     padding: 2px 8px;
     border-radius: 4px;
     margin: 2px 3px 2px 0;
@@ -369,7 +396,7 @@ def make_stage2_css() -> str:
   .agent-badge {{
     display: inline-block;
     font-family: {FONTS['mono']};
-    font-size: 10px;
+    font-size: 19px;
     font-weight: 600;
     padding: 3px 10px;
     border-radius: 20px;
@@ -381,7 +408,7 @@ def make_stage2_css() -> str:
 
   .agent-meta-row {{
     font-family: {FONTS['mono']};
-    font-size: 11px;
+    font-size: 21px;
     color: {c['text_muted']};
     line-height: 2.1;
   }}
@@ -422,7 +449,7 @@ def make_stage3_css() -> str:
     background: {c['green_dark']};
     color: #ffffff;
     font-family: {FONTS['mono']};
-    font-size: 9px; font-weight: 700;
+    font-size: 18px; font-weight: 700;
     letter-spacing: 0.15em;
     padding: 2px 10px;
     border-radius: 10px;
@@ -430,7 +457,7 @@ def make_stage3_css() -> str:
   }}
   .mc-model-name {{
     font-family: {FONTS['mono']};
-    font-size: 11px; font-weight: 600;
+    font-size: 21px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.1em;
     color: {c['text_dim']};
     margin-bottom: 14px;
@@ -443,25 +470,31 @@ def make_stage3_css() -> str:
     justify-content: space-between;
     align-items: baseline;
     font-family: {FONTS['mono']};
-    font-size: 11px;
+    font-size: 21px;
     color: {c['text_muted']};
     padding: 4px 0;
     border-bottom: 1px solid {c['border']};
   }}
   .mc-row:last-child {{ border-bottom: none; }}
-  .mc-row-label {{ color: {c['text_dim']}; font-size: 10px; }}
-  .mc-row-val   {{ color: {c['text']}; font-size: 14px; font-weight: 700; }}
+  .mc-row-label {{ color: {c['text_dim']}; font-size: 19px; }}
+  .mc-row-vals  {{ display: inline-flex; align-items: baseline; gap: 4px; }}
+  .mc-row-raw   {{ color: {c['text_dim']}; font-size: 21px; font-weight: 600; }}
+  .mc-row-arrow {{ color: {c['text_faint']}; font-size: 19px; }}
+  .mc-row-val   {{ color: {c['text']}; font-size: 26px; font-weight: 700; }}
   .mc-row-val.improved {{ color: {c['accent']}; }}
   .mc-row-val.best-val {{ color: {c['green_dark']}; }}
   .mc-delta-inline {{
-    font-size: 10px;
-    color: {c['green_dark']};
-    margin-left: 6px;
-    font-weight: 400;
+    font-size: 18px;
+    margin-left: 2px;
+    font-weight: 600;
   }}
+  .mc-delta-inline.up   {{ color: {c['green_dark']}; }}
+  .mc-delta-inline.down {{ color: {c['red']}; }}
 
   /* Recommendation card */
   .rec-card {{
+    position: relative;
+    max-width: 880px;
     background: {c['green_bg']};
     border: 1px solid {c['green']}66;
     border-left: 4px solid {c['green']};
@@ -471,18 +504,43 @@ def make_stage3_css() -> str:
     animation: recFadeIn 0.7s ease;
     box-shadow: {SHADOWS['card']};
   }}
+
+  /* Corner download icon + hover tooltip */
+  .rec-download {{
+    position: absolute; top: 16px; right: 18px;
+    width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: {c['panel']}; border: 1px solid {c['green']}66;
+    color: {c['green_dark']}; text-decoration: none; font-size: 30px;
+    cursor: pointer; transition: background 0.15s, box-shadow 0.15s;
+  }}
+  .rec-download:hover {{
+    background: {c['green_soft']};
+    box-shadow: 0 0 14px {c['green']}44;
+  }}
+  .rec-download::after {{
+    content: attr(data-tip);
+    position: absolute; top: 50%; right: 120%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    background: {c['text']}; color: #ffffff;
+    font-family: {FONTS['mono']}; font-size: 19px;
+    padding: 5px 9px; border-radius: 6px;
+    opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  }}
+  .rec-download:hover::after {{ opacity: 1; }}
   @keyframes recFadeIn {{
     from {{ opacity:0; transform:translateY(12px); }}
     to   {{ opacity:1; transform:translateY(0); }}
   }}
   .rec-eyebrow {{
     font-family: {FONTS['mono']};
-    font-size: 10px; color: {c['green_dark']};
+    font-size: 19px; color: {c['green_dark']};
     text-transform: uppercase; letter-spacing: 0.18em;
     margin-bottom: 6px;
   }}
   .rec-model-name {{
-    font-size: 26px; font-weight: 600;
+    font-size: 50px; font-weight: 600;
     color: {c['green_dark']}; margin-bottom: 16px;
   }}
   .rec-delta-cards {{
@@ -499,19 +557,19 @@ def make_stage3_css() -> str:
   }}
   .rec-delta-val {{
     font-family: {FONTS['mono']};
-    font-size: 20px; font-weight: 700;
+    font-size: 38px; font-weight: 700;
     color: {c['green_dark']}; line-height: 1;
     margin-bottom: 3px;
   }}
   .rec-delta-label {{
     font-family: {FONTS['mono']};
-    font-size: 9px; color: {c['green_dark']};
+    font-size: 18px; color: {c['green_dark']};
     text-transform: uppercase; letter-spacing: 0.1em;
   }}
   .rec-divider {{ border:none; border-top:1px solid {c['green']}33; margin:16px 0; }}
   .rec-section-label {{
     font-family: {FONTS['mono']};
-    font-size: 10px; color: {c['green_dark']};
+    font-size: 19px; color: {c['green_dark']};
     text-transform: uppercase; letter-spacing: 0.12em;
     margin-bottom: 8px; font-weight: 600;
   }}
@@ -521,19 +579,54 @@ def make_stage3_css() -> str:
     border-radius: 8px;
     padding: 14px 18px;
     font-family: {FONTS['mono']};
-    font-size: 11px; color: {c['text_muted']}; line-height: 2.2;
+    font-size: 21px; color: {c['text_muted']}; line-height: 2.2;
   }}
   .ck {{ color: {c['green_dark']}; }}
   .cv {{ color: {c['text']}; font-weight: 600; }}
-  .rec-body {{ font-size: 13px; color: {c['text_muted']}; line-height: 1.8; }}
+  .rec-body {{ font-size: 26px; color: {c['text_muted']}; line-height: 1.8; }}
 
   .proceed-hint {{
     text-align: center;
     font-family: {FONTS['mono']};
-    font-size: 11px; color: {c['text_dim']};
+    font-size: 21px; color: {c['text_dim']};
     letter-spacing: 0.1em; margin-bottom: 8px;
     text-transform: uppercase;
   }}
+
+  /* Frame-by-frame comparison table */
+  .fc-table {{
+    border: 1px solid {c['border']}; border-radius: 12px; overflow: hidden;
+    background: {c['panel']}; box-shadow: {SHADOWS['panel']}; margin-bottom: 18px;
+  }}
+  .fc-row {{ display: flex; align-items: stretch; border-bottom: 1px solid {c['border']}; }}
+  .fc-row:last-child {{ border-bottom: none; }}
+  .fc-metric-label {{
+    flex: 0 0 96px; padding: 9px 14px;
+    font-family: {FONTS['mono']}; font-size: 21px; color: {c['text_dim']};
+    display: flex; align-items: center;
+    background: {c['panel_alt']}; border-right: 1px solid {c['border']};
+  }}
+  .fc-cell {{
+    flex: 1; padding: 9px 12px; text-align: center;
+    font-family: {FONTS['mono']}; font-size: 27px; font-weight: 700; color: {c['text']};
+    border-right: 1px solid {c['border']};
+  }}
+  .fc-cell:last-child {{ border-right: none; }}
+  .fc-cell.best {{ background: {c['green_bg']}; color: {c['green_dark']}; }}
+  .fc-head {{ background: {c['panel_alt']}; }}
+  .fc-head .fc-cell {{ font-size: 21px; font-weight: 600; color: {c['text']}; line-height: 1.4; }}
+  .fc-head .fc-cell span {{
+    display: block; font-size: 18px; color: {c['text_dim']};
+    font-weight: 400; margin-top: 2px;
+  }}
+  .fc-row.f1 .fc-metric-label {{ color: {c['accent']}; font-weight: 700; }}
+  .fc-row.f1 .fc-cell {{ font-size: 30px; }}
+  .fc-row.f1 .fc-cell.best {{ color: {c['green_dark']}; }}
+  .fc-img-label {{
+    font-family: {FONTS['mono']}; font-size: 21px; color: {c['text_muted']};
+    margin: 16px 0 6px; font-weight: 600;
+  }}
+  .fc-img-label span {{ color: {c['text_dim']}; font-weight: 400; }}
 </style>
 """
 
@@ -611,16 +704,16 @@ def make_stage4_css() -> str:
     min-width: 150px;
   }}
   .s4-metric-label {{
-    font-family: {FONTS['mono']}; font-size: 9px;
+    font-family: {FONTS['mono']}; font-size: 18px;
     color: {c['text_dim']}; text-transform: uppercase;
     letter-spacing: 0.12em; margin-bottom: 6px;
   }}
   .s4-metric-val {{
-    font-family: {FONTS['mono']}; font-size: 30px;
+    font-family: {FONTS['mono']}; font-size: 58px;
     font-weight: 700; line-height: 1; color: {c['text']};
   }}
   .s4-metric-sub {{
-    font-family: {FONTS['mono']}; font-size: 10px;
+    font-family: {FONTS['mono']}; font-size: 19px;
     color: {c['text_faint']}; margin-top: 6px;
   }}
 
@@ -634,20 +727,20 @@ def make_stage4_css() -> str:
   .s4-status.below_baseline {{ background: {c['amber_bg']}; border-color: {c['amber']}66; }}
   .s4-status.collapse       {{ background: {c['red_bg']};   border-color: {c['red']}66; }}
   .s4-status-label {{
-    font-family: {FONTS['mono']}; font-size: 14px; font-weight: 700;
+    font-family: {FONTS['mono']}; font-size: 27px; font-weight: 700;
     letter-spacing: 0.03em; margin-bottom: 4px;
   }}
   .s4-status.beneficial     .s4-status-label {{ color: {c['green_dark']}; }}
   .s4-status.below_baseline .s4-status-label {{ color: {c['amber']}; }}
   .s4-status.collapse       .s4-status-label {{ color: {c['red_dark']}; }}
   .s4-status-desc {{
-    font-family: {FONTS['mono']}; font-size: 10px;
+    font-family: {FONTS['mono']}; font-size: 19px;
     color: {c['text_muted']}; line-height: 1.5;
   }}
 
   /* Ego-only reference line */
   .s4-baseline {{
-    font-family: {FONTS['mono']}; font-size: 11px;
+    font-family: {FONTS['mono']}; font-size: 21px;
     color: {c['text_muted']}; background: {c['panel_alt']};
     border: 1px dashed {c['border_strong']}; border-radius: 8px;
     padding: 8px 14px; margin: 10px 0 4px; line-height: 1.6;
@@ -656,7 +749,7 @@ def make_stage4_css() -> str:
 
   /* Row label */
   .s4-row-label {{
-    font-family: {FONTS['mono']}; font-size: 10px;
+    font-family: {FONTS['mono']}; font-size: 19px;
     color: {c['accent']}; text-transform: uppercase;
     letter-spacing: 0.15em; margin: 22px 0 12px;
   }}
@@ -680,7 +773,7 @@ def make_stage4_css() -> str:
     box-shadow: 0 0 18px {c['green']}66, 0 0 40px {c['green']}22;
   }}
   .s4-cap {{
-    font-family: {FONTS['mono']}; font-size: 10px;
+    font-family: {FONTS['mono']}; font-size: 19px;
     color: {c['text_dim']}; margin-top: 6px; line-height: 1.4;
   }}
   .s4-cell.sel .s4-cap {{ color: {c['green_dark']}; font-weight: 700; }}
@@ -688,25 +781,25 @@ def make_stage4_css() -> str:
     width: 100%; aspect-ratio: 2 / 1; border-radius: 8px;
     border: 2px dashed {c['border_strong']}; background: {c['panel_alt']};
     display: flex; align-items: center; justify-content: center;
-    font-family: {FONTS['mono']}; font-size: 10px; color: {c['text_faint']};
+    font-family: {FONTS['mono']}; font-size: 19px; color: {c['text_faint']};
   }}
 
   /* BEV large-selected view + thumbnail strip */
+  .s4-bev-large {{ max-width: 760px; margin: 0 auto; }}
   .s4-bev-large img {{
     width: 100%; height: auto; display: block;
     border-radius: 10px; border: 2px solid {c['green']};
-    background: #0a0e1a;
     box-shadow: 0 0 18px {c['green']}66, 0 0 40px {c['green']}22;
   }}
   .s4-bev-large .s4-cap {{ text-align: center; margin-top: 8px; }}
   .s4-row.thumbs {{ margin-top: 10px; }}
   .s4-row.thumbs .s4-cell {{ min-width: 88px; }}
-  .s4-row.thumbs .s4-cap {{ font-size: 9px; }}
+  .s4-row.thumbs .s4-cap {{ font-size: 18px; }}
 
   /* BEV legend */
   .s4-legend {{
     display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
-    margin: 4px 0 10px; font-family: {FONTS['mono']}; font-size: 11px;
+    margin: 4px 0 10px; font-family: {FONTS['mono']}; font-size: 21px;
     color: {c['text_muted']};
   }}
   .s4-legend-item {{ display: inline-flex; align-items: center; gap: 7px; }}
@@ -721,7 +814,7 @@ def make_stage4_css() -> str:
     border: 1px solid {c['border']};
     border-left: 3px solid {c['accent']};
     border-radius: 8px; padding: 12px 16px; margin-top: 12px;
-    font-family: {FONTS['mono']}; font-size: 10.5px;
+    font-family: {FONTS['mono']}; font-size: 21px;
     color: {c['text_muted']}; line-height: 1.8;
   }}
   .s4-note b {{ color: {c['text']}; }}

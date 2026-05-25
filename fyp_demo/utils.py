@@ -1,6 +1,26 @@
 import streamlit as st
 import time
+import base64
+from pathlib import Path
 from theme import COLORS, FONTS
+
+
+def download_icon_html(path: str, tooltip: str, filename: str,
+                       css_class: str = "dl-icon", mime: str = "text/csv") -> str:
+    """Compact download icon (base64 data-URI link) with a CSS hover tooltip.
+
+    Returns '' if the file can't be read. Designed to sit inside a `.dl-header`
+    flex row (or any positioned container) so it shares a header's row rather
+    than consuming a full row of its own.
+    """
+    if not path:
+        return ""
+    try:
+        b64 = base64.b64encode(Path(path).read_bytes()).decode("ascii")
+    except OSError:
+        return ""
+    return (f'<a class="{css_class}" download="{filename}" '
+            f'href="data:{mime};base64,{b64}" data-tip="{tooltip}">⬇</a>')
 
 
 DEFAULT_STATUS_MSGS = [
