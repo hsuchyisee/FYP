@@ -62,8 +62,8 @@ st.markdown("""
    text-decoration: none !important;
  }
  .v2v-tab.active {
-   color: #10B981 !important;
-   border-bottom-color: #10B981;
+   color: #419c86 !important;
+   border-bottom-color: #419c86;
    font-weight: 600;
  }
 
@@ -79,6 +79,12 @@ st.markdown("""
    min-width: 160px;
  }
 
+ /* Disable typing in selectbox — dropdown only */
+ [data-baseweb="select"] input {
+   pointer-events: none !important;
+   caret-color: transparent !important;
+ }
+
  /* Selected value text */
  .stSelectbox [data-baseweb="select"] > div {
    padding-right: 2.2rem !important;
@@ -86,11 +92,40 @@ st.markdown("""
    font-size: 23px !important;
  }
 
- /* Dropdown list items */
- [data-baseweb="menu"] li,
- [role="option"],
- [data-baseweb="popover"] li {
-   font-size: 23px !important;
+ /* Dropdown popover container */
+ [data-baseweb="popover"] {
+   background: #FFFFFF !important;
+   border: 1.5px solid #D1D5DB !important;
+   border-radius: 8px !important;
+   box-shadow: none !important;
+   overflow: hidden !important;
+ }
+
+ /* Remove separator lines between items */
+ [data-baseweb="menu"] ul {
+   padding: 4px 0 !important;
+ }
+ [role="option"] {
+   font-size: 20px !important;
+   color: #374151 !important;
+   padding: 10px 18px !important;
+   border: none !important;
+   border-bottom: none !important;
+   background: #FFFFFF !important;
+   transition: background 0.1s ease !important;
+ }
+
+ /* Hover state */
+ [role="option"]:hover {
+   background: rgba(114, 232, 199, 0.20) !important;
+   color: #111827 !important;
+ }
+
+ /* Selected item */
+ [aria-selected="true"][role="option"] {
+   background: rgba(114, 232, 199, 0.20) !important;
+   color: #111827 !important;
+   font-weight: 600 !important;
  }
 
 [data-baseweb="tag"] {
@@ -194,24 +229,34 @@ st.markdown("""
 
  .filter-row-spacer { height: 1.8rem; }
 
+ /* ── Cross-val tab underline ── */
+ [data-baseweb="tab-highlight"] {
+   background-color: #419c86 !important;
+ }
+ [data-baseweb="tab"][aria-selected="true"] {
+   color: #419c86 !important;
+ }
+
  /* ── Cross-val KPI boxes ── */
  .cv-kpi {
-   background: #F9FAFB;
-   border: 1px solid #E5E7EB;
-   border-radius: 12px;
-   padding: 18px 20px;
-   text-align: center;
+   background: rgba(114, 232, 199, 0.65) !important;
+   border: none !important;
+   border-radius: 14px !important;
+   padding: 22px 20px !important;
+   text-align: center !important;
+   box-shadow: 0 2px 8px rgba(61, 186, 152, 0.15) !important;
  }
  .cv-kpi-val {
    font-size: 40px;
    font-weight: 800;
-   color: #111827 !important;
+   color: #000000 !important;
    line-height: 1;
    margin-bottom: 6px;
  }
  .cv-kpi-label {
    font-size: 15px;
-   color: #6B7280 !important;
+   color: #000000 !important;
+   font-weight: 500;
    line-height: 1.4;
  }
 </style>
@@ -235,18 +280,43 @@ st.markdown('<p class="page-subtitle">Quantitative evaluation of fusion strategi
 st.divider()
 
 # ── Noise data ────────────────────────────────────────────────────────────────
-SNR_CSV_PATH = Path(__file__).parent.parent.parent / "noise" / "ap_vs_snr_intermediate_rayleigh_awgn.csv"
+SNR_CSV_PATH      = Path(__file__).parent.parent.parent / "noise" / "ap_vs_snr_late_rayleigh_awgn.csv"
+AVG_SNR_CSV_PATH  = Path(__file__).parent.parent.parent / "noise" / "ap_vs_snr_early_rayleigh_awgn.csv"
+INTER_CSV_PATH    = Path(__file__).parent.parent.parent / "noise" / "ap_vs_snr_intermediate_rayleigh_awgn.csv"
+COMBINED_CSV_PATH = Path(__file__).parent.parent.parent / "noise" / "ap_vs_snr_combined_rayleigh_awgn.csv"
+
+
+@st.cache_data
+def load_avg_snr_data():
+    return pd.read_csv(AVG_SNR_CSV_PATH)
+
+
+@st.cache_data
+def load_inter_snr_data():
+    return pd.read_csv(INTER_CSV_PATH)
+
+
+@st.cache_data
+def load_late_snr_bar():
+    df = pd.read_csv(SNR_CSV_PATH)
+    return df[df["fusion_method"] == "late"].copy() if "fusion_method" in df.columns else df
+
+
+@st.cache_data
+def load_combined_snr_data():
+    return pd.read_csv(COMBINED_CSV_PATH)
 
 
 @st.cache_data
 def load_snr_data():
-    df = pd.read_csv(SNR_CSV_PATH)
-    order = ["∞ (clean)", "+30.0 dB", "+10.0 dB", "+0.0 dB", "-30.0 dB"]
+    df = pd.read_csv(COMBINED_CSV_PATH)
+    order = ["ego only", "∞ (clean)", "+30.0 dB", "+20.0 dB", "+10.0 dB", "+0.0 dB"]
     df["snr_label"] = pd.Categorical(df["snr_label"], categories=order, ordered=True)
-    return df.sort_values("snr_label").reset_index(drop=True)
+    df = df[df["snr_label"].notna()].copy()
+    return df.sort_values(["fusion_method", "dataset", "snr_label"]).reset_index(drop=True)
 
 
-snr_data_available = SNR_CSV_PATH.exists()
+snr_data_available = COMBINED_CSV_PATH.exists()
 df = load_snr_data() if snr_data_available else None
 
 
@@ -512,115 +582,227 @@ st.divider()
 # ═══════════════════════════════════════════════════════════════════════════════
 # Section: Noise Robustness
 # ═══════════════════════════════════════════════════════════════════════════════
-# ═══════════════════════════════════════════════════════════════════════════════
-# Section: Noise Robustness
-# ═══════════════════════════════════════════════════════════════════════════════
-if not snr_data_available:
-    with st.container(border=True):
-        st.markdown('<span class="noise-card-anchor"></span>', unsafe_allow_html=True)
+with st.container(border=True):
+    st.markdown('<span class="noise-card-anchor"></span>', unsafe_allow_html=True)
+
+    if not snr_data_available:
         st.markdown('<h2 class="noise-title">Noise Robustness</h2>', unsafe_allow_html=True)
         st.info("Data not yet available — pending teammate upload.")
-
-if snr_data_available:
-    with st.container(border=True):
-        st.markdown('<span class="noise-card-anchor"></span>', unsafe_allow_html=True)
-
-    st.markdown(
-        """
-        <h2 class="noise-title">Noise Robustness</h2>
-        <p class="noise-caption">
-          Average Precision response across SNR levels for the Intermediate
-          fusion model under Rayleigh + AWGN channel noise.
-        </p>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown('<div class="filter-row-spacer"></div>', unsafe_allow_html=True)
-
-    fc1, fc2, _ = st.columns([2.4, 2.8, 2.8])
-
-    with fc1:
-        st.markdown('<div class="filter-label">IoU threshold</div>', unsafe_allow_html=True)
-        iou_choice = st.selectbox(
-            "IoU Threshold",
-            ["0.3", "0.5", "0.7"],
-            index=1,
-            label_visibility="collapsed",
+    else:
+        st.markdown(
+            """
+            <h2 class="noise-title">Noise Robustness</h2>
+            <p class="noise-caption">
+              Average Precision response across SNR levels for the Late
+              fusion model under Rayleigh + AWGN channel noise.
+            </p>
+            """,
+            unsafe_allow_html=True,
         )
 
-    with fc2:
-        st.markdown('<div class="filter-label">Detection class</div>', unsafe_allow_html=True)
-        class_options = ["Vehicle", "Pedestrian", "Truck", "mAP"]
-        selected_class = st.selectbox(
-            "Class",
-            class_options,
-            index=0,
-            label_visibility="collapsed",
+        st.markdown('<div class="filter-row-spacer"></div>', unsafe_allow_html=True)
+
+        # ── Bar chart: Detection Performance Under Channel Noise ──────────────
+        if COMBINED_CSV_PATH.exists():
+            _combined = load_combined_snr_data()
+            _bar_col  = "mAP_AP@0.5"
+            _BAR_W    = 0.35
+
+            # Average each fusion method's AP across all datasets
+            _avg = (
+                _combined[_combined["snr_label"].isin(["∞ (clean)", "+10.0 dB"])]
+                .groupby(["fusion_method", "snr_label"])[_bar_col]
+                .mean()
+                .reset_index()
+            )
+
+            _group_defs = [
+                ("Early<br>Fusion",        "early",        "#1E88E5", "#90CAF9"),
+                ("Intermediate<br>Fusion", "intermediate", "#FB8C00", "#FFCC80"),
+                ("Late<br>Fusion",         "late",          "#E53935", "#EF9A9A"),
+            ]
+
+            _labels, _clean_cols, _ret_cols = [], [], []
+            _clean_vals, _retained_vals, _lost_vals, _ret_pcts = [], [], [], []
+            for lbl, method, cc, rc in _group_defs:
+                _cv = float(_avg[(_avg["fusion_method"] == method) & (_avg["snr_label"] == "∞ (clean)")][_bar_col].values[0]) * 100
+                _nv = float(_avg[(_avg["fusion_method"] == method) & (_avg["snr_label"] == "+10.0 dB")][_bar_col].values[0]) * 100
+                _labels.append(lbl)
+                _clean_cols.append(cc)
+                _ret_cols.append(rc)
+                _clean_vals.append(_cv)
+                _retained_vals.append(_nv)
+                _lost_vals.append(_cv - _nv)
+                _ret_pcts.append(round(_nv / _cv * 100) if _cv > 0 else 0)
+
+            fig_bar = go.Figure()
+
+            fig_bar.add_trace(go.Bar(
+                name="Clean (no noise)",
+                x=_labels, y=_clean_vals,
+                offsetgroup="clean",
+                marker_color=_clean_cols,
+                text=[f"{v:.1f}%" for v in _clean_vals],
+                textposition="outside",
+                textfont=dict(size=13, color="#6B7280"),
+                width=_BAR_W,
+            ))
+            fig_bar.add_trace(go.Bar(
+                name="At +10 dB SNR (retained)",
+                x=_labels, y=_retained_vals,
+                offsetgroup="noisy",
+                base=[0] * 3,
+                marker_color=_ret_cols,
+                width=_BAR_W,
+            ))
+            # Red label on this trace — textposition="outside" places it exactly
+            # above the top of the stacked bar (retained + lost = clean height)
+            fig_bar.add_trace(go.Bar(
+                name="AP lost to noise",
+                x=_labels, y=_lost_vals,
+                offsetgroup="noisy",
+                base=_retained_vals,
+                marker=dict(
+                    color="rgba(180,40,40,0.65)",
+                    pattern=dict(shape="/", fgcolor="white", size=12, solidity=0.3),
+                ),
+                text=[f"{p}% retained" for p in _ret_pcts],
+                textposition="outside",
+                textfont=dict(size=13, color="#DC2626"),
+                width=_BAR_W,
+            ))
+
+
+
+            fig_bar.update_layout(
+                **_LIGHT,
+                barmode="group",
+                height=560,
+                margin=dict(l=80, r=60, t=100, b=100),
+                title=dict(
+                    text=(
+                        "Detection Performance Under Channel Noise"
+                        "<br><sup>Clean vs +10 dB SNR (Rayleigh + AWGN)</sup>"
+                    ),
+                    font=_TITLE_FONT, x=0.5, xanchor="center",
+                ),
+                xaxis=dict(**_AXIS),
+                yaxis=dict(
+                    **_AXIS,
+                    title=dict(text="mAP@0.5 (%)", font=_AXIS_TITLE_FONT),
+                    range=[0, max(_clean_vals) * 1.40],
+                    tickformat=".0f",
+                    ticksuffix="%",
+                    dtick=10,
+                ),
+            )
+            fig_bar.update_layout(legend=dict(
+                orientation="v",
+                yanchor="top", y=0.98,
+                xanchor="right", x=0.99,
+                font=dict(size=13, color="#374151"),
+                bgcolor="rgba(255,255,255,0.9)",
+                bordercolor="#D1D5DB",
+                borderwidth=1,
+            ))
+
+            st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
+
+        st.divider()
+
+        # ── Filters ───────────────────────────────────────────────────────────
+        fc1, fc2, fc3 = st.columns([2.4, 2.8, 2.8])
+
+        with fc1:
+            st.markdown('<div class="filter-label">IoU threshold</div>', unsafe_allow_html=True)
+            iou_choice = st.selectbox(
+                "IoU Threshold",
+                ["0.3", "0.5", "0.7"],
+                index=1,
+                label_visibility="collapsed",
+            )
+
+        with fc2:
+            st.markdown('<div class="filter-label">Detection class</div>', unsafe_allow_html=True)
+            class_options = ["Vehicle", "Pedestrian", "Truck", "mAP"]
+            selected_class = st.selectbox(
+                "Class",
+                class_options,
+                index=0,
+                label_visibility="collapsed",
+            )
+
+        with fc3:
+            st.markdown('<div class="filter-label">Dataset</div>', unsafe_allow_html=True)
+            available_datasets = sorted(df["dataset"].unique()) if "dataset" in df.columns else ["LiDAR-128"]
+            dataset_options = available_datasets + ["Average (all datasets)"]
+            selected_dataset = st.selectbox(
+                "Dataset",
+                dataset_options,
+                index=0,
+                label_visibility="collapsed",
+            )
+
+        class_cols = {
+            "Vehicle":    f"vehicle_AP@{iou_choice}",
+            "Pedestrian": f"pedestrian_AP@{iou_choice}",
+            "Truck":      f"truck_AP@{iou_choice}",
+            "mAP":        f"mAP_AP@{iou_choice}",
+        }
+
+        class_colors = {
+            "Vehicle":    "#2563EB",
+            "Pedestrian": "#D97706",
+            "Truck":      "#059669",
+            "mAP":        "#7C3AED",
+        }
+
+        col = class_cols[selected_class]
+
+        if selected_dataset == "Average (all datasets)":
+            plot_df = df.groupby(["fusion_method", "snr_label"], observed=True)[col].mean().reset_index()
+        elif "dataset" in df.columns:
+            plot_df = df[df["dataset"] == selected_dataset].copy()
+        else:
+            plot_df = df.copy()
+
+        fusion_colors = {"early": "#059669", "intermediate": "#D97706", "late": "#2563EB"}
+
+        fig = go.Figure()
+        for fusion_method, fc in fusion_colors.items():
+            sub = plot_df[plot_df["fusion_method"] == fusion_method]
+            if sub.empty or col not in sub.columns:
+                continue
+            fig.add_trace(go.Scatter(
+                x=sub["snr_label"].tolist(),
+                y=sub[col].tolist(),
+                mode="lines+markers",
+                name=fusion_method.capitalize(),
+                line=dict(color=fc, width=3),
+                marker=dict(size=9, color=fc, line=dict(color="white", width=1.5)),
+                hovertemplate=(
+                    f"<b>%{{fullData.name}}</b><br>"
+                    f"SNR: %{{x}}<br>"
+                    f"AP @ IoU {iou_choice}: %{{y:.4f}}<extra></extra>"
+                ),
+            ))
+
+        fig.update_layout(
+            **_LIGHT,
+            height=520,
+            margin=dict(l=100, r=28, t=72, b=110),
+            title=dict(text=f"Average Precision vs SNR — IoU {iou_choice}", font=_TITLE_FONT, x=0, xanchor="left"),
+            xaxis=dict(**_AXIS, title=dict(text="SNR Level", font=_AXIS_TITLE_FONT)),
+            yaxis=dict(**_AXIS, title=dict(text=f"AP @ IoU {iou_choice}", font=_AXIS_TITLE_FONT),
+                       range=[0, plot_df[col].max() * 1.18], tickformat=".2f"),
+            hovermode="x unified",
         )
+        fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=-0.28, xanchor="center", x=0.5,
+                                      font=dict(size=21, color="#374151"), bgcolor="rgba(255,255,255,0)", borderwidth=0))
 
-    class_cols = {
-        "Vehicle":    f"vehicle_AP@{iou_choice}",
-        "Pedestrian": f"pedestrian_AP@{iou_choice}",
-        "Truck":      f"truck_AP@{iou_choice}",
-        "mAP":        f"mAP_AP@{iou_choice}",
-    }
-
-    class_colors = {
-        "Vehicle":    "#2563EB",
-        "Pedestrian": "#D97706",
-        "Truck":      "#059669",
-        "mAP":        "#7C3AED",
-    }
-
-    x_labels = df["snr_label"].tolist()
-    col      = class_cols[selected_class]
-    color    = class_colors[selected_class]
-
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=x_labels,
-        y=df[col].tolist(),
-        mode="lines+markers",
-        name=selected_class,
-        line=dict(color=color, width=3),
-        marker=dict(size=9, color=color, line=dict(color="white", width=1.5)),
-        hovertemplate=(
-            f"<b>%{{fullData.name}}</b><br>"
-            f"SNR: %{{x}}<br>"
-            f"AP @ IoU {iou_choice}: %{{y:.4f}}<extra></extra>"
-        ),
-    ))
-
-    fig.add_vrect(
-        x0="+0.0 dB", x1="-30.0 dB",
-        fillcolor="rgba(239,68,68,0.07)", layer="below", line_width=0,
-        annotation_text="Degraded zone", annotation_position="top left",
-        annotation=dict(
-            font=dict(color="#B91C1C", size=20),
-            bgcolor="rgba(254,226,226,0.92)",
-            bordercolor="#FCA5A5", borderwidth=1, borderpad=4,
-        ),
-    )
-
-    st.divider()
-
-    fig.update_layout(
-        **_LIGHT,
-        height=520,
-        margin=dict(l=100, r=28, t=72, b=110),
-        title=dict(text=f"Average Precision vs SNR — IoU {iou_choice}", font=_TITLE_FONT, x=0, xanchor="left"),
-        xaxis=dict(**_AXIS, title=dict(text="SNR Level", font=_AXIS_TITLE_FONT)),
-        yaxis=dict(**_AXIS, title=dict(text=f"AP @ IoU {iou_choice}", font=_AXIS_TITLE_FONT),
-                   range=[0, max(df[col]) * 1.18], tickformat=".2f"),
-        legend=dict(orientation="h", yanchor="bottom", y=-0.28, xanchor="center", x=0.5,
-                    font=dict(size=21, color="#374151"), bgcolor="rgba(255,255,255,0)", borderwidth=0),
-        hovermode="x unified",
-    )
-
-    st.markdown('<div style="height: 2rem;"></div>', unsafe_allow_html=True)
-    st.plotly_chart(fig, use_container_width=True,
-                    config={"modeBarButtonsToRemove": ["select2d", "lasso2d"], "displaylogo": False})
+        st.markdown('<div style="height: 2rem;"></div>', unsafe_allow_html=True)
+        st.plotly_chart(fig, use_container_width=True,
+                        config={"modeBarButtonsToRemove": ["select2d", "lasso2d"], "displaylogo": False})
 
 
 st.divider()
