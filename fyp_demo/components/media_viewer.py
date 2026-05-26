@@ -13,7 +13,6 @@ def show_frame(path: Path, caption: str):
 
 # ── Main render function called by app.py ─────────────────────
 def render_media(model: str, scenario: str):
-
     # ── Section 1: Video ──────────────────────────────────────
     st.subheader("Video Output")
     video_path = Path(MEDIA_DIR) / "videos" / model / f"{scenario}.mp4"

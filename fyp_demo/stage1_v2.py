@@ -11,7 +11,8 @@ from scenario_loader import (
 )
 
 # Default dataset root for the dropdown SCENARIOS (uploaded scenarios override this).
-DEFAULT_DATASET_ROOT = "/home/student/Downloads/Camera_LiDAR"
+DEFAULT_DATASET_ROOT  = "/Users/hsuchyi/Downloads/Camera_LiDAR"
+DEFAULT_SCENARIO_KEY  = "📁  Camera_LiDAR / 2023-03-17-16-12-12_3_0"
 # DEFAULT_DATASET_ROOT = "C:/Users/Jess/Downloads/Camera_LiDAR"
 # Lab PC: "/home/student/Downloads/V2XReal_Data/Camera_LiDAR_test/test"
 
@@ -27,7 +28,7 @@ st.markdown(
     make_global_css() + make_stage2_css() + make_stage3_css() + make_stage4_css(),
     unsafe_allow_html=True,
 )
-
+1
 # ── Top navigation ─────────────────────────────────────────────
 # This file is the multipage entrypoint, so it is served at "/".
 # pages/analysis.py -> /analysis, pages/tensorboard.py -> /tensorboard.
@@ -49,7 +50,7 @@ st.markdown("""
 <nav class="v2v-nav">
   <a href="/" class="v2v-tab active" target="_self">Dashboard</a>
   <a href="/analysis" class="v2v-tab" target="_self">Analysis</a>
-  <a href="/tensorboard" class="v2v-tab" target="_self">TensorBoard</a>
+  <a href="/tensorboard" class="v2v-tab" target="_self">Summary</a>
 </nav>
 """, unsafe_allow_html=True)
 
@@ -79,8 +80,8 @@ SCENARIOS = {
 # SESSION STATE
 # ══════════════════════════════════════════════════════════════
 if "stage" not in st.session_state:
-    st.session_state.stage    = 1   # 1=idle, 2=selected, 3=ready
-    st.session_state.scenario = None
+    st.session_state.stage    = 3
+    st.session_state.scenario = SCENARIOS[DEFAULT_SCENARIO_KEY]
 
 # Counter used to force-reset the selectbox + file_uploader widgets by
 # rotating their keys. Streamlit doesn't reliably clear widget state via
