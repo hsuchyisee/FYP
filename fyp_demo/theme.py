@@ -635,12 +635,25 @@ def make_nav_css() -> str:
     """Shared top-nav bar styling used across all pages."""
     return """
 <style>
- .stApp, [data-testid="stAppViewContainer"] {
-   background-color: #FFFFFF !important;
-   color: #111827 !important;
+ @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;600&display=swap');
+ html { background-color: #f8fafc !important; }
+ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+ @keyframes v2vFadeIn {
+   from { opacity: 0; transform: translateY(6px); }
+   to   { opacity: 1; transform: translateY(0); }
  }
- [data-testid="stHeader"] { background-color: #FFFFFF !important; }
- h1, h2, h3, h4, h5, h6, .stMarkdown p, p, label { color: #111827 !important; }
+ .stApp, [data-testid="stAppViewContainer"] {
+   background-color: #f8fafc !important;
+   color: #0f172a !important;
+   animation: v2vFadeIn 0.25s ease forwards;
+ }
+ [data-testid="stHeader"] { background-color: #f8fafc !important; }
+ #MainMenu, footer, header { visibility: hidden; }
+ [data-testid="stSidebarNav"] { display: none !important; }
+ [data-testid="stSidebar"] { display: none !important; }
+ [data-testid="collapsedControl"] { display: none !important; }
+ .block-container { padding-top: 32px !important; max-width: 1300px !important; }
+ h1, h2, h3, h4, h5, h6, .stMarkdown p, p, label { color: #0f172a !important; }
  hr { border-color: #B0B8C8 !important; }
  .stCaption, medium { color: #4B5563 !important; }
  .v2v-site-title {
@@ -662,7 +675,8 @@ def make_nav_css() -> str:
  .v2v-tab {
    display: inline-block;
    padding: 10px 20px 10px 0;
-   font-size: 1.5rem;
+   font-family: 'Inter', sans-serif !important;
+   font-size: 18px !important;
    font-weight: 500;
    color: #6B7280 !important;
    text-decoration: none !important;

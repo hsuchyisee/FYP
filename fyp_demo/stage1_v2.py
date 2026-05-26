@@ -28,7 +28,6 @@ st.markdown(
     make_global_css() + make_stage2_css() + make_stage3_css() + make_stage4_css(),
     unsafe_allow_html=True,
 )
-1
 # ── Top navigation ─────────────────────────────────────────────
 # This file is the multipage entrypoint, so it is served at "/".
 # pages/analysis.py -> /analysis, pages/tensorboard.py -> /tensorboard.
@@ -39,7 +38,7 @@ st.markdown("""
   .v2v-nav { display:flex; border-bottom:1.5px solid #E5E7EB;
              margin:0 0 24px; padding:0; }
   .v2v-tab { display:inline-block; padding:10px 20px 10px 0;
-             font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:500;
+             font-family:'Inter',sans-serif !important; font-size:18px !important; font-weight:500;
              color:#6B7280 !important; text-decoration:none !important;
              border-bottom:2px solid transparent; margin-bottom:-1.5px;
              margin-right:8px; transition:color .18s, border-color .18s; }

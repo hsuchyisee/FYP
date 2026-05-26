@@ -8,42 +8,82 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from theme import make_nav_css
 from components.chart_data import TENSORBOARD_RUNS
 
-st.set_page_config(page_title="V2V Training Curves", layout="wide")
+st.set_page_config(page_title="V2V Training Curves", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown(make_nav_css(), unsafe_allow_html=True)
 st.markdown("""
 <style>
- .page-subtitle { color: #4B5563 !important; font-size: 22px; margin: 0.1rem 0 0; }
+ .tb-hero {
+   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 60%, #ffffff 100%);
+   border: 1px solid #bfdbfe;
+   border-radius: 20px;
+   padding: 52px 48px 44px;
+   margin-bottom: 40px;
+   position: relative;
+   overflow: hidden;
+   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+ }
+ .tb-hero::after {
+   content: '';
+   position: absolute;
+   top: -80px; right: -80px;
+   width: 300px; height: 300px;
+   background: radial-gradient(circle, #2563eb22 0%, transparent 65%);
+   border-radius: 50%;
+   pointer-events: none;
+ }
+ .tb-hero-eyebrow {
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 21px;
+   color: #2563eb;
+   letter-spacing: 0.2em;
+   text-transform: uppercase;
+   margin-bottom: 14px;
+ }
+ .tb-hero-title {
+   font-size: 46px;
+   font-weight: 600;
+   color: #0f172a;
+   line-height: 1.2;
+   margin-bottom: 12px;
+ }
+ .tb-hero-title span { color: #2563eb; }
+ .tb-hero-sub {
+   font-size: 32px;
+   color: #475569;
+   max-width: 600px;
+   line-height: 1.8;
+   margin: 0;
+ }
  .ds-label {
-   font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 19px; font-weight: 600; letter-spacing: 0.18em;
    text-transform: uppercase; color: #2563EB !important;
-   margin: 0 0 2px;
+   margin: 0 0 8px;
  }
  .ds-title {
-   font-size: 32px; font-weight: 800; color: #0F172A !important;
-   line-height: 1.15; margin: 0 0 4px;
+   font-size: 38px; font-weight: 600; color: #0F172A !important;
+   line-height: 1.15; margin: 0 0 6px;
  }
+ .stMarkdown p { font-size: 20px !important; }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
-<div class="v2v-site-title">Semantic V2V Communication</div>
 <nav class="v2v-nav">
   <a href="/" class="v2v-tab" target="_self">Dashboard</a>
   <a href="/analysis" class="v2v-tab" target="_self">Analysis</a>
   <a href="/tensorboard" class="v2v-tab active" target="_self">Summary</a>
 </nav>
+<div class="tb-hero">
+  <div class="tb-hero-eyebrow">FYP · Semantic V2V Communication</div>
+  <div class="tb-hero-title">Training Curves — <span>Model Comparison</span></div>
+  <div class="tb-hero-sub">
+    mAP vs epoch for all runs per fusion model, per dataset.
+    Best run shown as solid line; others as dashed.
+  </div>
+</div>
 """, unsafe_allow_html=True)
-
-st.title("Training Curves — Model Comparison")
-st.markdown(
-    '<p class="page-subtitle">'
-    "mAP vs epoch — all runs per fusion model, per dataset. "
-    "Best run (highest peak mAP) shown as solid line; others are dashed."
-    "</p>",
-    unsafe_allow_html=True,
-)
-st.divider()
 
 # ── Design constants ──────────────────────────────────────────────────────────
 _LIGHT = dict(

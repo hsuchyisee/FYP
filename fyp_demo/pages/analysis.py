@@ -1,4 +1,6 @@
 import base64
+import os
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -6,75 +8,16 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from theme import make_nav_css
 
-st.set_page_config(page_title="V2V Analysis", layout="wide")
+st.set_page_config(page_title="V2V Analysis", layout="wide", initial_sidebar_state="collapsed")
 
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
+st.markdown(make_nav_css(), unsafe_allow_html=True)
 st.markdown("""
 <style>
- /* ── Page background ── */
- .stApp, [data-testid="stAppViewContainer"] {
-   background-color: #FFFFFF !important;
-   color: #111827 !important;
- }
-
- .block-container {
-   padding-left: 1.3in !important;
-   padding-right: 1.3in !important;
- }
-
- [data-testid="stHeader"] { background-color: #FFFFFF !important; }
-
- h1, h2, h3, h4, h5, h6,
- .stMarkdown p, p, label { color: #111827 !important; }
-
- hr { border-color: #B0B8C8 !important; }
- .stCaption, medium { color: #4B5563 !important; }
-
- /* ── Site title ── */
- .v2v-site-title {
-   font-size: 45px;
-   font-weight: 700;
-   color: #111827 !important;
-   margin: 0;
-   padding: 8px 0 14px;
-   letter-spacing: -0.01em;
-   line-height: 1.1;
- }
-
- /* ── Nav underline tabs ── */
- .v2v-nav {
-   display: flex;
-   border-bottom: 2px solid #E5E7EB;
-   margin-bottom: 16px;
-   padding: 0;
-   gap: 0;
- }
- .v2v-tab {
-   display: inline-block;
-   padding: 10px 18px 12px 18px;
-   font-family: 'Inter', sans-serif;
-   font-size: 0.95rem;
-   font-weight: 500;
-   letter-spacing: 0.01em;
-   text-align: center;
-   color: #6B7280 !important;
-   text-decoration: none !important;
-   border-bottom: 2px solid transparent;
-   margin-bottom: -2px;
-   transition: color 0.18s ease, border-color 0.18s ease;
- }
- .v2v-tab:hover {
-   color: #1d4ed8 !important;
-   text-decoration: none !important;
- }
- .v2v-tab.active {
-   color: #2563eb !important;
-   border-bottom-color: #2563eb;
-   font-weight: 600;
- }
-
  /* ── Widgets ── */
  .stSelectbox > div > div,
  .stMultiSelect > div > div {
@@ -84,7 +27,7 @@ st.markdown("""
  }
 
  .stSelectbox {
-   min-width: 160px;
+   min-width: 260px;
  }
 
  /* Disable typing in selectbox — dropdown only */
@@ -96,8 +39,12 @@ st.markdown("""
  /* Selected value text */
  .stSelectbox [data-baseweb="select"] > div {
    padding-right: 2.2rem !important;
+   padding-top: 10px !important;
+   padding-bottom: 10px !important;
    position: relative;
    font-size: 23px !important;
+   min-height: 52px !important;
+   align-items: center !important;
  }
 
  /* Dropdown popover container */
@@ -239,10 +186,10 @@ st.markdown("""
 
  /* ── Cross-val tab underline ── */
  [data-baseweb="tab-highlight"] {
-   background-color: #419c86 !important;
+   background-color: #10B981 !important;
  }
  [data-baseweb="tab"][aria-selected="true"] {
-   color: #419c86 !important;
+   color: #10B981 !important;
  }
 
  /* ── Cross-val KPI boxes ── */
@@ -361,42 +308,30 @@ st.markdown("""
  }
  .analysis-hero-eyebrow {
    font-family: 'JetBrains Mono', monospace;
-   font-size: 11px;
+   font-size: 21px;
    color: #2563eb;
    letter-spacing: 0.2em;
    text-transform: uppercase;
    margin-bottom: 14px;
  }
  .analysis-hero-title {
-   font-size: 38px;
-   font-weight: 700;
-   color: #2563eb;
+   font-size: 46px;
+   font-weight: 600;
+   color: #0f172a;
    line-height: 1.2;
    margin-bottom: 12px;
  }
  .analysis-hero-sub {
-   font-size: 14px;
+   font-size: 32px;
    color: #475569;
    max-width: 600px;
    line-height: 1.8;
    margin: 0;
  }
+ .stMarkdown p { font-size: 20px !important; }
 </style>
 """, unsafe_allow_html=True)
 
-
-# ── Hero card ────────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="analysis-hero">
-  <div class="analysis-hero-eyebrow">FYP · Semantic V2V Communication</div>
-  <div class="analysis-hero-title">Fusion Model Analysis</div>
-  <p class="analysis-hero-sub">
-    Quantitative evaluation of early, intermediate, and late fusion strategies
-    across the V2X-Real dataset. Explore detection performance, cross-validation
-    results, and robustness under realistic channel noise conditions.
-  </p>
-</div>
-""", unsafe_allow_html=True)
 
 # ── Navigation ────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -405,6 +340,19 @@ st.markdown("""
   <a href="/analysis" class="v2v-tab active" target="_self">Analysis</a>
   <a href="/tensorboard" class="v2v-tab" target="_self">Summary</a>
 </nav>
+""", unsafe_allow_html=True)
+
+# ── Hero card ────────────────────────────────────────────────────────────────
+st.markdown("""
+<div class="analysis-hero">
+  <div class="analysis-hero-eyebrow">FYP · Semantic V2V Communication</div>
+  <div class="analysis-hero-title">Fusion Model Analysis</div>
+  <div class="analysis-hero-sub">
+    Quantitative evaluation of early, intermediate, and late fusion strategies
+    across the V2X-Real dataset. Explore detection performance, cross-validation
+    results, and robustness under realistic channel noise conditions.
+  </div>
+</div>
 """, unsafe_allow_html=True)
 
 # ── PDF builder ──────────────────────────────────────────────────────────────
@@ -527,7 +475,7 @@ GROUP_COLORS = {
     "Cameras-Trained":  "#7C3AED",
     "LiDAR128-Trained": "#059669",
 }
-MODEL_COLORS = {"Early": "#2563EB", "Intermediate": "#7C3AED", "Late": "#D97706"}
+MODEL_COLORS = {"Early": "#2563EB", "Intermediate": "#059669", "Late": "#D97706"}
 MODE_COLORS  = {"i2i": "#059669", "ic": "#7C3AED", "vc": "#2563EB", "v2v": "#DC2626"}
 CLASS_COLORS = {"vehicle": "#2563EB", "pedestrian": "#D97706", "truck": "#059669"}
 
@@ -668,7 +616,7 @@ with st.container(border=True):
         fig2 = go.Figure()
         for group, gc in GROUP_COLORS.items():
             sub = delta_df[delta_df.group == group]
-            colors = [gc if d >= 0 else "#DC2626" for d in sub.delta]
+            colors = [MODEL_COLORS.get(m, gc) if d >= 0 else "#DC2626" for m, d in zip(sub.model.tolist(), sub.delta)]
             fig2.add_trace(go.Bar(
                 name=group,
                 x=sub.model.tolist(),
@@ -904,7 +852,7 @@ with st.container(border=True):
         st.divider()
 
         # ── Filters ───────────────────────────────────────────────────────────
-        fc1, fc2, fc3 = st.columns([2.4, 2.8, 2.8])
+        fc1, fc2, fc3 = st.columns([3, 4, 4])
 
         with fc1:
             st.markdown('<div class="filter-label">IoU threshold</div>', unsafe_allow_html=True)
