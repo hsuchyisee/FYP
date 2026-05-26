@@ -639,7 +639,7 @@ with st.container(border=True):
         fig1.update_layout(
             **_LIGHT, barmode="group", height=460,
             margin=dict(l=60, r=28, t=80, b=60),
-            title=dict(text="mAP@0.5 by Training Group, Model & LiDAR Density", font=_TITLE_FONT, x=0, xanchor="left"),
+            title=dict(text="Cross-Validation Performance Across Datasets", font=_TITLE_FONT, x=0, xanchor="left"),
         )
         fig1.update_layout(legend=dict(font=dict(size=12, color="#374151"), bgcolor="rgba(255,255,255,0)", borderwidth=0))
         fig1.update_yaxes(range=[0, 0.60], **_AXIS, title_text="mAP@0.5", col=1)
@@ -681,7 +681,7 @@ with st.container(border=True):
         fig2.update_layout(
             **_LIGHT, barmode="group", height=440,
             margin=dict(l=60, r=28, t=72, b=60),
-            title=dict(text="mAP@0.5 Gain: LiDAR-64 to LiDAR-128", font=_TITLE_FONT, x=0, xanchor="left"),
+            title=dict(text="How Much Density Increase Helps Accuracy", font=_TITLE_FONT, x=0, xanchor="left"),
             xaxis=dict(**_AXIS, title=dict(text="Fusion Model", font=_AXIS_TITLE_FONT)),
             yaxis=dict(**_AXIS, title=dict(text="Δ mAP@0.5", font=_AXIS_TITLE_FONT)),
         )
