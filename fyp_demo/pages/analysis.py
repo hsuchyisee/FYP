@@ -1,3 +1,4 @@
+import base64
 from pathlib import Path
 
 import pandas as pd
@@ -267,6 +268,77 @@ st.markdown("""
    line-height: 1.4;
  }
 
+ /* ── Card download icon ── */
+ .card-dl-header { position: relative; }
+ .card-download {
+   position: absolute; top: 4px; right: 0;
+   width: 32px; height: 32px; border-radius: 8px;
+   display: flex; align-items: center; justify-content: center;
+   background: #ffffff; border: 1px solid #9abbe6;
+   color: #2563eb; text-decoration: none !important; font-size: 16px;
+   cursor: pointer; transition: background 0.15s, box-shadow 0.15s;
+ }
+ .card-download:hover {
+   background: #eff6ff;
+   box-shadow: 0 0 12px #2563eb33;
+ }
+ .card-download::after {
+   content: attr(data-tip);
+   position: absolute; top: 50%; right: 120%;
+   transform: translateY(-50%);
+   white-space: nowrap;
+   background: #0f172a; color: #ffffff;
+   font-family: 'JetBrains Mono', monospace; font-size: 11px;
+   padding: 5px 9px; border-radius: 6px;
+   opacity: 0; pointer-events: none; transition: opacity 0.15s;
+   z-index: 999;
+ }
+ .card-download:hover::after { opacity: 1; }
+
+ /* ── Print / PDF export ── */
+ @media print {
+   /* Hide interactive chrome */
+   [data-testid="stHeader"], [data-testid="stToolbar"],
+   [data-testid="stSidebar"], .v2v-nav, .stButton > button,
+   .stSelectbox, .stMultiSelect, [data-testid="stRadio"],
+   .card-download, .filter-row-spacer,
+   [data-baseweb="tab-list"],
+   [class*="modebar"] { display: none !important; }
+
+   /* Reveal ALL tab panels, not just the active one */
+   [data-baseweb="tab-panel"] {
+     display: block !important;
+     visibility: visible !important;
+     opacity: 1 !important;
+     height: auto !important;
+     overflow: visible !important;
+   }
+
+   /* Avoid splitting cards and charts across pages */
+   [data-testid="stVerticalBlockBorderWrapper"],
+   [data-testid="stPlotlyChart"] { page-break-inside: avoid; break-inside: avoid; }
+
+   /* Tighter margins for paper */
+   .block-container { padding: 0.4in 0.6in !important; max-width: 100% !important; }
+
+   /* Keep text black */
+   * { color: #000000 !important; }
+ }
+
+ /* ── PDF button ── */
+ .pdf-btn {
+   display: inline-flex; align-items: center; gap: 6px;
+   padding: 6px 14px;
+   font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 500;
+   color: #2563eb !important; text-decoration: none !important;
+   border: 1px solid #9abbe6; border-radius: 8px;
+   background: white; cursor: pointer;
+   transition: background 0.15s, box-shadow 0.15s;
+   margin-left: auto;
+ }
+ .pdf-btn:hover { background: #eff6ff; box-shadow: 0 0 10px #2563eb22; }
+ .nav-row { display: flex; align-items: center; }
+
  /* ── Hero card ── */
  .analysis-hero {
    background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 60%, #ffffff 100%);
@@ -335,7 +407,49 @@ st.markdown("""
 </nav>
 """, unsafe_allow_html=True)
 
-st.divider()
+# ── PDF builder ──────────────────────────────────────────────────────────────
+def _build_pdf() -> bytes:
+    import os, tempfile
+    from fpdf import FPDF
+
+    sections = [
+        ("Cross-Validation: mAP by Training Group",        "_pdf_fig1"),
+        ("Cross-Validation: LiDAR-64 -> LiDAR-128 Gain",  "_pdf_fig2"),
+        ("Cross-Validation: Cooperation Modes",            "_pdf_fig3"),
+        ("Cross-Validation: Per-class AP",                 "_pdf_fig4"),
+        ("Noise Robustness: Detection Under Channel Noise", "_pdf_fig_bar"),
+        ("Noise Robustness: Average Precision vs SNR",     "_pdf_fig_snr"),
+    ]
+
+    pdf = FPDF(orientation="L", unit="mm", format="A4")
+    pdf.set_margins(10, 10, 10)
+    pdf.set_auto_page_break(auto=True, margin=10)
+
+    for title, key in sections:
+        fig = st.session_state.get(key)
+        if fig is None:
+            continue
+        try:
+            img_bytes = fig.to_image(format="png", width=1400, height=650, scale=1.5)
+        except Exception:
+            continue
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                tmp.write(img_bytes)
+                tmp_path = tmp.name
+            pdf.add_page()
+            pdf.set_font("Helvetica", "B", 13)
+            pdf.cell(0, 8, title, new_x="LMARGIN", new_y="NEXT")
+            pdf.image(tmp_path, x=10, y=22, w=277)
+        except Exception:
+            continue
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+
+    return bytes(pdf.output())
+
 
 # ── Noise data ────────────────────────────────────────────────────────────────
 SNR_CSV_PATH      = Path(__file__).parent.parent.parent / "noise" / "ap_vs_snr_late_rayleigh_awgn.csv"
@@ -424,12 +538,19 @@ CLASS_COLORS = {"vehicle": "#2563EB", "pedestrian": "#D97706", "truck": "#059669
 with st.container(border=True):
     st.markdown('<span class="cv-card-anchor"></span>', unsafe_allow_html=True)
 
-    st.markdown("""
-    <h2 class="cv-title">Cross-Validation Inference</h2>
-    <p class="cv-caption">
-      mAP@0.5 evaluated across 3 Fusion Models, 3 Training Groups,
-      2 LiDAR Densities, and 4 cooperation modes on V2X-Real.
-    </p>
+    _cv_b64 = base64.b64encode(CV_CSV_PATH.read_bytes()).decode("ascii") if CV_CSV_PATH.exists() else ""
+    _cv_dl = (f'<a class="card-download" download="cross_validation_results.csv" '
+              f'href="data:text/csv;base64,{_cv_b64}" data-tip="Download CSV">⬇</a>'
+              if _cv_b64 else "")
+    st.markdown(f"""
+    <div class="card-dl-header">
+      <div class="cv-title">Cross-Validation Inference</div>
+      <p class="cv-caption">
+        mAP@0.5 evaluated across 3 Fusion Models, 3 Training Groups,
+        2 LiDAR Densities, and 4 cooperation modes on V2X-Real.
+      </p>
+      {_cv_dl}
+    </div>
     """, unsafe_allow_html=True)
 
     # ── Load & aggregate ──────────────────────────────────────────
@@ -525,7 +646,8 @@ with st.container(border=True):
         fig1.update_yaxes(range=[0, 0.60], **_AXIS, col=2)
         fig1.update_yaxes(range=[0, 0.60], **_AXIS, col=3)
         fig1.update_xaxes(**_AXIS)
-        st.plotly_chart(fig1, use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(fig1, use_container_width=True, config={"modeBarButtons": [["toImage"]], "displaylogo": False, "toImageButtonOptions": {"format": "png", "filename": "fusion_model_performance", "scale": 2}})
+        st.session_state["_pdf_fig1"] = fig1
         st.markdown(
             f"**Best result:** {best.group_label} · {best.model_label} on {best.dataset_label} — "
             f"**mAP@0.5 = {best.mAP_05:.3f}**",
@@ -563,7 +685,8 @@ with st.container(border=True):
             xaxis=dict(**_AXIS, title=dict(text="Fusion Model", font=_AXIS_TITLE_FONT)),
             yaxis=dict(**_AXIS, title=dict(text="Δ mAP@0.5", font=_AXIS_TITLE_FONT)),
         )
-        st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(fig2, use_container_width=True, config={"modeBarButtons": [["toImage"]], "displaylogo": False, "toImageButtonOptions": {"format": "png", "filename": "lidar_density_gain", "scale": 2}})
+        st.session_state["_pdf_fig2"] = fig2
         best_d  = delta_df.loc[delta_df.delta.idxmax()]
         worst_d = delta_df.loc[delta_df.delta.idxmin()]
         st.markdown(
@@ -591,7 +714,8 @@ with st.container(border=True):
             xaxis=dict(**_AXIS, range=[0, 0.60], title=dict(text="avg mAP@0.5", font=_AXIS_TITLE_FONT)),
             yaxis=dict(**_AXIS, title=dict(text="", font=_AXIS_TITLE_FONT)),
         )
-        st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(fig3, use_container_width=True, config={"modeBarButtons": [["toImage"]], "displaylogo": False, "toImageButtonOptions": {"format": "png", "filename": "cooperation_modes", "scale": 2}})
+        st.session_state["_pdf_fig3"] = fig3
         spread = round(float(mode_best["mAP_05"]) - float(mode_worst["mAP_05"]), 3)
         st.markdown(
             f"**{str(mode_best['mode']).upper()}** is the strongest cooperation mode "
@@ -627,7 +751,8 @@ with st.container(border=True):
             xaxis=dict(**_AXIS, title=dict(text="Fusion Model", font=_AXIS_TITLE_FONT)),
             yaxis=dict(**_AXIS, range=[0, 0.80], title=dict(text="AP@0.5", font=_AXIS_TITLE_FONT)),
         )
-        st.plotly_chart(fig4, use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(fig4, use_container_width=True, config={"modeBarButtons": [["toImage"]], "displaylogo": False, "toImageButtonOptions": {"format": "png", "filename": "per_class_ap", "scale": 2}})
+        st.session_state["_pdf_fig4"] = fig4
         st.markdown(
             "Pedestrian AP@0.5 peaks at only **{:.3f}** across all models. "
             "Headline mAP is primarily dragged down by the pedestrian class.".format(ped_ceil)
@@ -643,17 +768,25 @@ st.divider()
 with st.container(border=True):
     st.markdown('<span class="noise-card-anchor"></span>', unsafe_allow_html=True)
 
+    _snr_b64 = base64.b64encode(COMBINED_CSV_PATH.read_bytes()).decode("ascii") if COMBINED_CSV_PATH.exists() else ""
+    _snr_dl = (f'<a class="card-download" download="noise_snr_results.csv" '
+               f'href="data:text/csv;base64,{_snr_b64}" data-tip="Download CSV">⬇</a>'
+               if _snr_b64 else "")
+
     if not snr_data_available:
-        st.markdown('<h2 class="noise-title">Noise Robustness</h2>', unsafe_allow_html=True)
+        st.markdown('<div class="noise-title">Noise Robustness</div>', unsafe_allow_html=True)
         st.info("Data not yet available — pending teammate upload.")
     else:
         st.markdown(
-            """
-            <h2 class="noise-title">Noise Robustness</h2>
-            <p class="noise-caption">
-              Average Precision response across SNR levels for the Late
-              fusion model under Rayleigh + AWGN channel noise.
-            </p>
+            f"""
+            <div class="card-dl-header">
+              <div class="noise-title">Noise Robustness</div>
+              <p class="noise-caption">
+                Average Precision response across SNR levels for the Late
+                fusion model under Rayleigh + AWGN channel noise.
+              </p>
+              {_snr_dl}
+            </div>
             """,
             unsafe_allow_html=True,
         )
@@ -765,7 +898,8 @@ with st.container(border=True):
                 borderwidth=1,
             ))
 
-            st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
+            st.plotly_chart(fig_bar, use_container_width=True, config={"modeBarButtons": [["toImage"]], "displaylogo": False, "toImageButtonOptions": {"format": "png", "filename": "channel_noise_performance", "scale": 2}})
+            st.session_state["_pdf_fig_bar"] = fig_bar
 
         st.divider()
 
@@ -870,11 +1004,8 @@ with st.container(border=True):
                 mode="lines",
                 name=f"{_fusion_labels[fusion_method]} (ego only)",
                 legendgroup=fusion_method,
+                hoverinfo="skip",
                 line=dict(color=fc, width=2, dash="dot"),
-                hovertemplate=(
-                    f"<b>%{{fullData.name}}</b><br>"
-                    f"AP @ IoU {iou_choice}: %{{y:.4f}}<extra></extra>"
-                ),
             ))
 
         fig.update_layout(
@@ -894,19 +1025,38 @@ with st.container(border=True):
             yanchor="top", y=-0.32,
             xanchor="center", x=0.5,
             font=dict(size=12, color="#374151"),
-            bgcolor="white",
-            bordercolor="#E5E7EB",
-            borderwidth=1,
-            tracegroupgap=60,
+            bgcolor="rgba(0,0,0,0)",
+            borderwidth=0,
+            tracegroupgap=40,
             itemsizing="constant",
             itemwidth=35,
-            entrywidth=180,
         ))
 
         st.markdown('<div style="height: 2rem;"></div>', unsafe_allow_html=True)
         st.plotly_chart(fig, use_container_width=True,
-                        config={"modeBarButtonsToRemove": ["select2d", "lasso2d"], "displaylogo": False})
+                        config={"modeBarButtons": [["toImage"]], "displaylogo": False, "toImageButtonOptions": {"format": "png", "filename": "average_precision_snr", "scale": 2}})
+        st.session_state["_pdf_fig_snr"] = fig
 
 
 st.divider()
-st.caption("FYP — Semantic V2V Communication for Autonomous Cooperative Perception")
+
+# ── PDF download ──────────────────────────────────────────────────────────────
+_has_figs = any(st.session_state.get(k) is not None
+                for k in ["_pdf_fig1", "_pdf_fig_bar", "_pdf_fig_snr"])
+
+_dl_col, _cap_col = st.columns([2, 5])
+with _dl_col:
+    if _has_figs:
+        with st.spinner("Building PDF…"):
+            _pdf_bytes = _build_pdf()
+        st.download_button(
+            label="⬇  Download PDF Report",
+            data=_pdf_bytes,
+            file_name="fusion_analysis_report.pdf",
+            mime="application/pdf",
+            use_container_width=True,
+        )
+    else:
+        st.info("Scroll through the page once to load all charts, then the PDF button will appear.")
+with _cap_col:
+    st.caption("FYP — Semantic V2V Communication for Autonomous Cooperative Perception")
