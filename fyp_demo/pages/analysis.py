@@ -18,6 +18,11 @@ st.markdown("""
    color: #111827 !important;
  }
 
+ .block-container {
+   padding-left: 1.3in !important;
+   padding-right: 1.3in !important;
+ }
+
  [data-testid="stHeader"] { background-color: #FFFFFF !important; }
 
  h1, h2, h3, h4, h5, h6,
@@ -40,30 +45,32 @@ st.markdown("""
  /* ── Nav underline tabs ── */
  .v2v-nav {
    display: flex;
-   border-bottom: 1.5px solid #E5E7EB;
+   border-bottom: 2px solid #E5E7EB;
    margin-bottom: 16px;
    padding: 0;
    gap: 0;
  }
  .v2v-tab {
    display: inline-block;
-   padding: 10px 20px 10px 0;
-   font-size: 1.5rem;
+   padding: 10px 18px 12px 18px;
+   font-family: 'Inter', sans-serif;
+   font-size: 0.95rem;
    font-weight: 500;
+   letter-spacing: 0.01em;
+   text-align: center;
    color: #6B7280 !important;
    text-decoration: none !important;
    border-bottom: 2px solid transparent;
-   margin-bottom: -1.5px;
-   margin-right: 8px;
+   margin-bottom: -2px;
    transition: color 0.18s ease, border-color 0.18s ease;
  }
  .v2v-tab:hover {
-   color: #111827 !important;
+   color: #1d4ed8 !important;
    text-decoration: none !important;
  }
  .v2v-tab.active {
-   color: #419c86 !important;
-   border-bottom-color: #419c86;
+   color: #2563eb !important;
+   border-bottom-color: #2563eb;
    font-weight: 600;
  }
 
@@ -94,7 +101,7 @@ st.markdown("""
 
  /* Dropdown popover container */
  [data-baseweb="popover"] {
-   background: #FFFFFF !important;
+   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 60%, #ffffff 100%) !important;
    border: 1.5px solid #D1D5DB !important;
    border-radius: 8px !important;
    box-shadow: none !important;
@@ -111,19 +118,19 @@ st.markdown("""
    padding: 10px 18px !important;
    border: none !important;
    border-bottom: none !important;
-   background: #FFFFFF !important;
+   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 60%, #ffffff 100%) !important;
    transition: background 0.1s ease !important;
  }
 
  /* Hover state */
  [role="option"]:hover {
-   background: rgba(114, 232, 199, 0.20) !important;
+   background: rgba(37, 99, 235, 0.10) !important;
    color: #111827 !important;
  }
 
  /* Selected item */
  [aria-selected="true"][role="option"] {
-   background: rgba(114, 232, 199, 0.20) !important;
+   background: rgba(37, 99, 235, 0.10) !important;
    color: #111827 !important;
    font-weight: 600 !important;
  }
@@ -157,8 +164,8 @@ st.markdown("""
 
  /* ── Locally scoped card styling (noise section) ── */
  [data-testid="stVerticalBlockBorderWrapper"]:has(.noise-card-anchor):not(:has([data-testid="stVerticalBlockBorderWrapper"] .noise-card-anchor)) {
-   background: #FFFFFF !important;
-   border: 1px solid rgba(17,24,39,0.13) !important;
+   background: #ffffff !important;
+   border: 1px solid #9abbe6 !important;
    border-radius: 14px !important;
    box-shadow: 0 18px 44px rgba(15,23,42,0.13) !important;
    padding: 26px 28px 20px !important;
@@ -172,8 +179,8 @@ st.markdown("""
 
  /* ── Locally scoped card styling (cross-val section) ── */
  [data-testid="stVerticalBlockBorderWrapper"]:has(.cv-card-anchor):not(:has([data-testid="stVerticalBlockBorderWrapper"] .cv-card-anchor)) {
-   background: #FFFFFF !important;
-   border: 1px solid rgba(17,24,39,0.13) !important;
+   background: #ffffff !important;
+   border: 1px solid #9abbe6 !important;
    border-radius: 14px !important;
    box-shadow: 0 18px 44px rgba(15,23,42,0.13) !important;
    padding: 26px 28px 20px !important;
@@ -239,12 +246,12 @@ st.markdown("""
 
  /* ── Cross-val KPI boxes ── */
  .cv-kpi {
-   background: rgba(114, 232, 199, 0.65) !important;
-   border: none !important;
+   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 60%, #ffffff 100%) !important;
+   border: 1px solid #9abbe6 !important;
    border-radius: 14px !important;
    padding: 22px 20px !important;
    text-align: center !important;
-   box-shadow: 0 2px 8px rgba(61, 186, 152, 0.15) !important;
+   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
  }
  .cv-kpi-val {
    font-size: 40px;
@@ -259,23 +266,74 @@ st.markdown("""
    font-weight: 500;
    line-height: 1.4;
  }
+
+ /* ── Hero card ── */
+ .analysis-hero {
+   background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 60%, #ffffff 100%);
+   border: 1px solid #9abbe6;
+   border-radius: 20px;
+   padding: 52px 48px 44px;
+   margin-bottom: 16px;
+   position: relative;
+   overflow: hidden;
+   box-shadow: 0 1px 3px rgba(15,23,42,0.04);
+ }
+ .analysis-hero::after {
+   content: '';
+   position: absolute;
+   top: -80px; right: -80px;
+   width: 300px; height: 300px;
+   background: radial-gradient(circle, #2563eb22 0%, transparent 65%);
+   border-radius: 50%;
+   pointer-events: none;
+ }
+ .analysis-hero-eyebrow {
+   font-family: 'JetBrains Mono', monospace;
+   font-size: 11px;
+   color: #2563eb;
+   letter-spacing: 0.2em;
+   text-transform: uppercase;
+   margin-bottom: 14px;
+ }
+ .analysis-hero-title {
+   font-size: 38px;
+   font-weight: 700;
+   color: #2563eb;
+   line-height: 1.2;
+   margin-bottom: 12px;
+ }
+ .analysis-hero-sub {
+   font-size: 14px;
+   color: #475569;
+   max-width: 600px;
+   line-height: 1.8;
+   margin: 0;
+ }
 </style>
 """, unsafe_allow_html=True)
 
 
+# ── Hero card ────────────────────────────────────────────────────────────────
+st.markdown("""
+<div class="analysis-hero">
+  <div class="analysis-hero-eyebrow">FYP · Semantic V2V Communication</div>
+  <div class="analysis-hero-title">Fusion Model Analysis</div>
+  <p class="analysis-hero-sub">
+    Quantitative evaluation of early, intermediate, and late fusion strategies
+    across the V2X-Real dataset. Explore detection performance, cross-validation
+    results, and robustness under realistic channel noise conditions.
+  </p>
+</div>
+""", unsafe_allow_html=True)
+
 # ── Navigation ────────────────────────────────────────────────────────────────
 st.markdown("""
-<div class="v2v-site-title">Semantic V2V Communication</div>
 <nav class="v2v-nav">
   <a href="/" class="v2v-tab" target="_self">Dashboard</a>
   <a href="/analysis" class="v2v-tab active" target="_self">Analysis</a>
   <a href="/tensorboard" class="v2v-tab" target="_self">TensorBoard</a>
 </nav>
 """, unsafe_allow_html=True)
-
-
-st.title("Fusion Model Analysis")
-st.markdown('<p class="page-subtitle">Quantitative evaluation of fusion strategies and datasets</p>', unsafe_allow_html=True)
 
 st.divider()
 
@@ -310,7 +368,7 @@ def load_combined_snr_data():
 @st.cache_data
 def load_snr_data():
     df = pd.read_csv(COMBINED_CSV_PATH)
-    order = ["ego only", "∞ (clean)", "+30.0 dB", "+20.0 dB", "+10.0 dB", "+0.0 dB"]
+    order = ["+0.0 dB", "+10.0 dB", "+20.0 dB", "+30.0 dB", "∞ (clean)"]
     df["snr_label"] = pd.Categorical(df["snr_label"], categories=order, ordered=True)
     df = df[df["snr_label"].notna()].copy()
     return df.sort_values(["fusion_method", "dataset", "snr_label"]).reset_index(drop=True)
@@ -617,9 +675,9 @@ with st.container(border=True):
             )
 
             _group_defs = [
-                ("Early<br>Fusion",        "early",        "#1E88E5", "#90CAF9"),
-                ("Intermediate<br>Fusion", "intermediate", "#FB8C00", "#FFCC80"),
-                ("Late<br>Fusion",         "late",          "#E53935", "#EF9A9A"),
+                ("Early<br>Fusion",        "early",        "#2563EB", "#93C5FD"),
+                ("Intermediate<br>Fusion", "intermediate", "#059669", "#6EE7B7"),
+                ("Late<br>Fusion",         "late",         "#F57C00", "#FDBA74"),
             ]
 
             _labels, _clean_cols, _ret_cols = [], [], []
@@ -686,6 +744,7 @@ with st.container(border=True):
                     ),
                     font=_TITLE_FONT, x=0.5, xanchor="center",
                 ),
+                hoverlabel=dict(bgcolor="white", bordercolor="#D1D5DB", font=dict(color="#111827")),
                 xaxis=dict(**_AXIS),
                 yaxis=dict(
                     **_AXIS,
@@ -766,7 +825,10 @@ with st.container(border=True):
         else:
             plot_df = df.copy()
 
-        fusion_colors = {"early": "#059669", "intermediate": "#D97706", "late": "#2563EB"}
+        fusion_colors = {"early": "#2563EB", "intermediate": "#059669", "late": "#F57C00"}
+        _snr_x_cats = ["+0.0 dB", "+10.0 dB", "+20.0 dB", "+30.0 dB", "∞ (clean)"]
+
+        _fusion_labels = {"early": "Early", "intermediate": "Intermediate", "late": "Late"}
 
         fig = go.Figure()
         for fusion_method, fc in fusion_colors.items():
@@ -777,7 +839,9 @@ with st.container(border=True):
                 x=sub["snr_label"].tolist(),
                 y=sub[col].tolist(),
                 mode="lines+markers",
-                name=fusion_method.capitalize(),
+                name=_fusion_labels[fusion_method],
+                legendgroup=fusion_method,
+                legendgrouptitle=dict(text=""),
                 line=dict(color=fc, width=3),
                 marker=dict(size=9, color=fc, line=dict(color="white", width=1.5)),
                 hovertemplate=(
@@ -787,18 +851,57 @@ with st.container(border=True):
                 ),
             ))
 
+        # Ego-only dotted threshold lines
+        _raw = load_combined_snr_data()
+        _ego = _raw[_raw["snr_label"] == "ego only"]
+        for fusion_method, fc in fusion_colors.items():
+            _ego_sub = _ego[_ego["fusion_method"] == fusion_method]
+            if _ego_sub.empty or col not in _ego_sub.columns:
+                continue
+            if selected_dataset == "Average (all datasets)":
+                ego_val = _ego_sub[col].mean()
+            elif "dataset" in _ego_sub.columns:
+                ego_val = _ego_sub[_ego_sub["dataset"] == selected_dataset][col].mean()
+            else:
+                ego_val = _ego_sub[col].mean()
+            fig.add_trace(go.Scatter(
+                x=_snr_x_cats,
+                y=[ego_val] * len(_snr_x_cats),
+                mode="lines",
+                name=f"{_fusion_labels[fusion_method]} (ego only)",
+                legendgroup=fusion_method,
+                line=dict(color=fc, width=2, dash="dot"),
+                hovertemplate=(
+                    f"<b>%{{fullData.name}}</b><br>"
+                    f"AP @ IoU {iou_choice}: %{{y:.4f}}<extra></extra>"
+                ),
+            ))
+
         fig.update_layout(
             **_LIGHT,
-            height=520,
-            margin=dict(l=100, r=28, t=72, b=110),
+            height=600,
+            margin=dict(l=100, r=28, t=72, b=240),
             title=dict(text=f"Average Precision vs SNR — IoU {iou_choice}", font=_TITLE_FONT, x=0, xanchor="left"),
             xaxis=dict(**_AXIS, title=dict(text="SNR Level", font=_AXIS_TITLE_FONT)),
             yaxis=dict(**_AXIS, title=dict(text=f"AP @ IoU {iou_choice}", font=_AXIS_TITLE_FONT),
                        range=[0, plot_df[col].max() * 1.18], tickformat=".2f"),
             hovermode="x unified",
+            hoverlabel=dict(bgcolor="white", bordercolor="#D1D5DB", font=dict(color="#111827")),
         )
-        fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=-0.28, xanchor="center", x=0.5,
-                                      font=dict(size=21, color="#374151"), bgcolor="rgba(255,255,255,0)", borderwidth=0))
+        fig.update_layout(legend=dict(
+            orientation="h",
+            traceorder="grouped",
+            yanchor="top", y=-0.32,
+            xanchor="center", x=0.5,
+            font=dict(size=12, color="#374151"),
+            bgcolor="white",
+            bordercolor="#E5E7EB",
+            borderwidth=1,
+            tracegroupgap=60,
+            itemsizing="constant",
+            itemwidth=35,
+            entrywidth=180,
+        ))
 
         st.markdown('<div style="height: 2rem;"></div>', unsafe_allow_html=True)
         st.plotly_chart(fig, use_container_width=True,
