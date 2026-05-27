@@ -1,4 +1,3 @@
-import os
 import streamlit as st
 from utils import render_tunnel
 from theme import make_global_css, make_stage2_css, make_stage3_css, make_stage4_css
@@ -14,7 +13,7 @@ from scenario_loader import (
 # Default dataset root for the dropdown SCENARIOS (uploaded scenarios override this).
 # Set the DATASET_ROOT environment variable to point to your local Camera_LiDAR folder,
 # or upload a scenario zip. On Streamlit Cloud the dropdown scenarios are unavailable.
-DEFAULT_DATASET_ROOT  = os.environ.get("DATASET_ROOT", "")
+DEFAULT_DATASET_ROOT  = "/Users/hsuchyi/Downloads/Camera_LiDAR"
 DEFAULT_SCENARIO_KEY  = "📁  Camera_LiDAR / 2023-03-17-16-12-12_3_0"
 
 # ── Page config ────────────────────────────────────────────────

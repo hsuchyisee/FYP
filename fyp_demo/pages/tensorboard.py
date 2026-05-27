@@ -191,4 +191,114 @@ for ds_key, ds_short, ds_desc in DATASETS:
 
     st.divider()
 
+# ══════════════════════════════════════════════════════════════════════════════
+# BENCHMARK COMPARISON
+# ══════════════════════════════════════════════════════════════════════════════
+st.markdown("""
+<div style="margin:8px 0 24px;">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;
+              letter-spacing:0.18em;text-transform:uppercase;color:#2563EB;margin-bottom:6px;">
+    Benchmark Comparison
+  </div>
+  <div style="font-size:28px;font-weight:600;color:#0f172a;line-height:1.2;margin-bottom:8px;">
+    Our Results vs V2X-Real Paper
+  </div>
+  <div style="font-size:16px;color:#475569;line-height:1.6;max-width:760px;">
+    Best-run results paired against their published equivalents from the V2X-Real paper
+    (Liu et al., 2023). All values are AP / mAP in % at IoU 0.3 and 0.5.
+    <span style="color:#059669;font-weight:600;">Green</span> = we outperform the paper method &nbsp;·&nbsp;
+    <span style="color:#DC2626;font-weight:600;">Red</span> = below paper method.
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+# AttFuse is intermediate fusion — pair it with our Intermediate Fusion
+_PAIRS = [
+    (("No Fusion",     38.7, 35.9, 25.5, 13.1, 20.2, 14.5, 28.2, 21.2),
+     ("No Fusion",     14.3, 13.8, 33.1, 16.9, 24.3, 20.4, 23.9, 17.1)),
+    (("Early Fusion",  51.1, 47.6, 31.6, 16.0, 32.5, 23.6, 38.4, 29.1),
+     ("Early",         64.7, 62.3, 37.0, 19.2, 33.8, 21.7, 45.1, 34.4)),
+    (("AttFuse",       62.6, 59.4, 32.2, 15.5, 32.6, 26.6, 42.5, 33.8),
+     ("Intermediate",  67.0, 64.8, 40.5, 18.9, 42.4, 33.4, 51.6, 39.1)),
+    (("Late Fusion",   46.1, 43.1, 28.3, 11.8, 19.8, 14.0, 31.4, 23.0),
+     ("Late",          49.1, 46.5, 31.1, 17.0, 36.5, 27.3, 38.9, 30.3)),
+    (("V2X-ViT",       62.7, 60.3, 36.7, 18.6, 35.1, 28.3, 44.8, 35.8),
+     ("V2X-ViT",       65.2, 63.6, 34.0, 16.4, 40.3, 21.5, 46.5, 33.9)),
+]
+_PAPER_ONLY = []
+
+_COL_IDX = list(range(1, 9))
+_header_cols = [
+    "Car<br>@0.3", "Car<br>@0.5",
+    "Ped<br>@0.3", "Ped<br>@0.5",
+    "Truck<br>@0.3", "Truck<br>@0.5",
+    "mAP<br>@0.3", "mAP<br>@0.5",
+]
+_TH = (
+    'padding:10px 14px;text-align:center;background:#F1F5F9;'
+    'font-family:JetBrains Mono,monospace;font-size:12px;font-weight:600;'
+    'letter-spacing:0.08em;color:#374151;border-bottom:2px solid #D1D5DB;'
+)
+_hdr_html = (
+    f'<th style="padding:10px 16px;text-align:left;background:#F1F5F9;'
+    f'font-family:JetBrains Mono,monospace;font-size:12px;font-weight:600;'
+    f'letter-spacing:0.08em;color:#374151;border-bottom:2px solid #D1D5DB;">Method</th>'
+    + "".join(f'<th style="{_TH}">{h}</th>' for h in _header_cols)
+)
+
+def _paper_cell(val):
+    return (f'<td style="padding:10px 14px;text-align:center;'
+            f'border-bottom:1px solid #E5E7EB;color:#374151;font-weight:400;">{val:.1f}</td>')
+
+def _our_cell(our_val, paper_val):
+    delta = our_val - paper_val
+    if delta > 0:
+        bg, color, arrow = "#F0FDF4", "#059669", "▲"
+    elif delta < 0:
+        bg, color, arrow = "#FEF2F2", "#DC2626", "▼"
+    else:
+        bg, color, arrow = "#FFFFFF", "#374151", ""
+    delta_str = f'<span style="font-size:11px;opacity:0.8;margin-left:3px;">{arrow}{abs(delta):.1f}</span>'
+    return (f'<td style="padding:10px 14px;text-align:center;background:{bg};'
+            f'border-bottom:1px solid #E5E7EB;color:{color};font-weight:600;">'
+            f'{our_val:.1f}{delta_str}</td>')
+
+def _paper_row(row, group_top=False):
+    border = "border-top:2px solid #D1D5DB;" if group_top else ""
+    cells = "".join(_paper_cell(row[i]) for i in _COL_IDX)
+    return (f'<tr style="background:#FFFFFF;{border}">'
+            f'<td style="padding:10px 16px;border-bottom:1px solid #E5E7EB;'
+            f'color:#374151;font-weight:400;font-family:Inter,sans-serif;">{row[0]}</td>'
+            f'{cells}</tr>')
+
+def _our_row(our, paper):
+    cells = "".join(_our_cell(our[i], paper[i]) for i in _COL_IDX)
+    return (f'<tr style="background:#F0FDF4;">'
+            f'<td style="padding:10px 16px;border-bottom:1px solid #E5E7EB;'
+            f'color:#059669;font-weight:600;font-family:Inter,sans-serif;">'
+            f'{our[0]} <span style="font-size:11px;background:#DCFCE7;color:#059669;'
+            f'border-radius:4px;padding:1px 6px;margin-left:4px;">Ours</span></td>'
+            f'{cells}</tr>')
+
+_rows_html = ""
+for i, (paper, ours) in enumerate(_PAIRS):
+    _rows_html += _paper_row(paper, group_top=(i > 0))
+    _rows_html += _our_row(ours, paper)
+
+if _PAPER_ONLY:
+    _rows_html += f'<tr><td colspan="9" style="padding:6px 16px;background:#F8FAFC;border-top:2px solid #D1D5DB;border-bottom:1px solid #E5E7EB;font-family:JetBrains Mono,monospace;font-size:11px;color:#6B7280;letter-spacing:0.1em;">ADDITIONAL PAPER BASELINES</td></tr>'
+    for r in _PAPER_ONLY:
+        _rows_html += _paper_row(r)
+
+_table_html = f"""
+<div style="overflow-x:auto;margin:0 0 32px;">
+<table style="width:100%;border-collapse:collapse;font-size:15px;
+              box-shadow:0 1px 4px rgba(15,23,42,0.06);border-radius:12px;overflow:hidden;">
+  <thead><tr>{_hdr_html}</tr></thead>
+  <tbody>{_rows_html}</tbody>
+</table>
+</div>
+"""
+st.markdown(_table_html, unsafe_allow_html=True)
+
 st.caption("FYP — Semantic V2V Communication for Autonomous Cooperative Perception")
