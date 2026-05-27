@@ -11,8 +11,9 @@ from scenario_loader import (
 )
 
 # Default dataset root for the dropdown SCENARIOS (uploaded scenarios override this).
-DEFAULT_DATASET_ROOT  = "/Users/hsuchyi/Downloads/Camera_LiDAR"
+DEFAULT_DATASET_ROOT  = "/home/student/Downloads/Camera_LiDAR"
 DEFAULT_SCENARIO_KEY  = "📁  Camera_LiDAR / 2023-03-17-16-12-12_3_0"
+# DEFAULT_DATASET_ROOT = "/Users/hsuchyi/Downloads/Camera_LiDAR"
 # DEFAULT_DATASET_ROOT = "C:/Users/Jess/Downloads/Camera_LiDAR"
 # Lab PC: "/home/student/Downloads/V2XReal_Data/Camera_LiDAR_test/test"
 
@@ -205,12 +206,25 @@ with col_btn:
     load_clicked = st.button("▶  Load Scenario", use_container_width=True)
 
 # ── Resolve input — exactly one source allowed (dropdown XOR upload) ──
+def _clear_pipeline_state():
+    """Wipe scenario + every downstream stage flag so nothing below Stage 1 renders."""
+    cleanup_extracted(st.session_state.get("scenario"))
+    for key in ["scenario",
+                "s3_inference_started", "s3_inference_done",
+                "s3_cards_animated",
+                "s3_video_started", "s3_video_tunnel_done",
+                "s4_started", "s4_tunnel_done", "s4_snr_slider"]:
+        if key in st.session_state:
+            del st.session_state[key]
+    st.session_state.stage = 1
+
 sc_to_load = None
 if load_clicked:
     has_dropdown = chosen_key != "— Select a scenario folder —"
     has_upload   = uploaded_zip is not None
 
     if has_dropdown and has_upload:
+        _clear_pipeline_state()
         st.error("Use either the dropdown selection OR an uploaded zip — not both. "
                  "Clear one and try again.")
     elif has_dropdown:
@@ -219,8 +233,13 @@ if load_clicked:
         try:
             sc_to_load = validate_and_extract_zip(uploaded_zip)
         except ScenarioValidationError as e:
+            # Reset everything so previously-loaded stages disappear; user is
+            # asked to upload the required folder format again.
+            _clear_pipeline_state()
             st.error(f"❌ Invalid scenario zip: {e}")
+            st.info("Upload a scenario folder that matches the required layout to continue.")
     else:
+        _clear_pipeline_state()
         st.warning("Select a scenario from the dropdown or upload a .zip first.")
 
 # ── On load (shared by both inputs) ────────────────────────────
@@ -358,14 +377,17 @@ else:
         # Clean up any temp dir from a previously uploaded scenario
         cleanup_extracted(st.session_state.get("scenario"))
 
-        # Clear all non-widget session state.
-        for key in ["stage", "scenario",
+        # Clear scenario + every downstream stage flag. NOTE: don't delete
+        # "stage" — the init block above re-seeds it to 3 if absent, which
+        # would land the user back at Stage 3 instead of a clean Stage 1.
+        for key in ["scenario",
                     "s3_inference_started", "s3_inference_done",
                     "s3_cards_animated",
                     "s3_video_started", "s3_video_tunnel_done",
                     "s4_started", "s4_tunnel_done", "s4_snr_slider"]:
             if key in st.session_state:
                 del st.session_state[key]
+        st.session_state.stage = 1
 
         # Rotate widget keys so the selectbox + file_uploader are
         # re-instantiated on the next rerun (returns them to initial state).

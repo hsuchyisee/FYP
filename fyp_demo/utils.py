@@ -63,7 +63,7 @@ def _tunnel_html(
     header_html = ""
     if header_text:
         header_html = (
-            f'<div style="font-family:{mono};font-size:10px;color:{c};'
+            f'<div style="font-family:{mono};font-size:19px;color:{c};'
             f'letter-spacing:0.15em;text-transform:uppercase;margin-bottom:12px;">'
             f'{header_text}</div>'
         )
@@ -72,7 +72,8 @@ def _tunnel_html(
     footer_color = COLORS["green_dark"] if show_done_inline else c
 
     return (
-        f'<div style="display:flex;flex-direction:column;align-items:center;padding:4px 0;">'
+        f'<div style="display:flex;flex-direction:column;align-items:center;'
+        f'padding:4px 0 28px;">'
         f'{header_html}'
         f'<div style="position:relative;width:4px;height:120px;'
         f'background:{track};border-radius:4px;overflow:visible;">'
@@ -87,7 +88,7 @@ def _tunnel_html(
         f'box-shadow:0 0 12px {c},0 0 24px {c}88;'
         f'position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);"></div>'
         f'</div>'
-        f'<div style="font-family:{mono};font-size:11px;color:{footer_color};'
+        f'<div style="font-family:{mono};font-size:21px;color:{footer_color};'
         f'margin-top:12px;text-align:center;line-height:1.8;">'
         f'{pct}%{footer_extra}'
         f'</div>'
@@ -152,7 +153,7 @@ def render_tunnel(
             )
             status_ph.markdown(f"""
             <div style="text-align:center;font-family:{FONTS['mono']};
-                 font-size:11px;color:{COLORS['text_dim']};margin-top:2px;">
+                 font-size:18px;color:{COLORS['text_dim']};margin-top:2px;">
               {msg if pct < 100 else ''}
             </div>
             """, unsafe_allow_html=True)

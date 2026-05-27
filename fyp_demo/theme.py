@@ -128,7 +128,7 @@ def make_global_css() -> str:
   .hero-sub {{
     font-size: 27px;
     color: {c['text_muted']};
-    max-width: 560px;
+    max-width: none;
     line-height: 1.8;
   }}
 
@@ -229,7 +229,7 @@ def make_global_css() -> str:
     letter-spacing: 0.1em;
   }}
 
-  /* Selectbox */
+  /* Selectbox — taller box so descenders (g, p, y) aren't clipped */
   [data-testid="stSelectbox"] > div > div {{
     background: {c['panel']} !important;
     border: 1px solid {c['border_strong']} !important;
@@ -237,6 +237,23 @@ def make_global_css() -> str:
     font-family: {FONTS['mono']} !important;
     font-size: 22px !important;
     color: {c['accent_dark']} !important;
+    min-height: 54px !important;
+    line-height: 1.6 !important;
+  }}
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div {{
+    min-height: 54px !important;
+    line-height: 1.6 !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+  }}
+  /* Dropdown popover options — same breathing room */
+  div[data-baseweb="popover"] li,
+  div[data-baseweb="popover"] [role="option"] {{
+    font-family: {FONTS['mono']} !important;
+    font-size: 22px !important;
+    line-height: 1.6 !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
   }}
 
   /* Button */
@@ -280,11 +297,11 @@ def make_global_css() -> str:
   .pipeline {{
     display: flex;
     align-items: center;
-    gap: 0;
+    gap: 18px;
     background: {c['panel']};
     border: 1px solid {c['border']};
     border-radius: 12px;
-    padding: 24px 28px;
+    padding: 32px 36px;
     margin-bottom: 8px;
     overflow-x: auto;
     box-shadow: {SHADOWS['panel']};
@@ -293,14 +310,15 @@ def make_global_css() -> str:
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 110px;
+    min-width: 140px;
+    gap: 14px;
   }}
   .pipe-icon {{
-    width: 44px; height: 44px;
-    border-radius: 10px;
+    width: 58px; height: 58px;
+    border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
     font-size: 38px;
-    margin-bottom: 8px;
+    margin-bottom: 0;
   }}
   .pipe-icon.active   {{ background: {c['accent_soft']}; box-shadow: 0 0 16px {c['accent']}22; }}
   .pipe-icon.inactive {{ background: {c['panel_alt']}; }}
@@ -309,13 +327,14 @@ def make_global_css() -> str:
     color: {c['text_muted']};
     text-align: center;
     font-family: {FONTS['mono']};
+    line-height: 1.5;
   }}
   .pipe-label.active {{ color: {c['accent_dark']}; }}
   .pipe-arrow {{
     font-size: 35px;
     color: {c['border_strong']};
-    margin: 0 6px;
-    padding-bottom: 20px;
+    margin: 0 14px;
+    padding-bottom: 36px;
   }}
   .custom-divider {{
     border: none;
@@ -375,12 +394,6 @@ def make_stage2_css() -> str:
     color: {c['text_muted']};
     border: 1px solid {c['border']};
   }}
-  .obj-pill.car        {{ color: {c['obj_car']};        border-color: {c['border_accent']}; background: {c['accent_bg']}; }}
-  .obj-pill.pedestrian {{ color: {c['obj_pedestrian']}; border-color: #a7f3d0; background: {c['green_bg']}; }}
-  .obj-pill.truck      {{ color: {c['obj_truck']};      border-color: #fcd34d; background: {c['amber_bg']}; }}
-  .obj-pill.bus        {{ color: {c['obj_bus']};        border-color: #ddd6fe; background: #f5f3ff; }}
-  .obj-pill.van        {{ color: {c['obj_van']};        border-color: #fed7aa; background: #fff7ed; }}
-  .obj-pill.other      {{ color: {c['obj_other']};      border-color: {c['border']}; }}
 
   .agent-card-box {{
     background: {c['panel']};
@@ -500,7 +513,7 @@ def make_stage3_css() -> str:
     border-left: 4px solid {c['green']};
     border-radius: 12px;
     padding: 28px 32px;
-    margin: 24px 0;
+    margin: 24px auto;
     animation: recFadeIn 0.7s ease;
     box-shadow: {SHADOWS['card']};
   }}
@@ -544,27 +557,31 @@ def make_stage3_css() -> str:
     color: {c['green_dark']}; margin-bottom: 16px;
   }}
   .rec-delta-cards {{
-    display: flex; gap: 10px; flex-wrap: wrap;
+    display: flex; gap: 10px; flex-wrap: nowrap;
+    justify-content: center; align-items: stretch;
     margin-bottom: 20px;
   }}
   .rec-delta-card {{
+    flex: 1 1 0;
     background: {c['panel']};
     border: 1px solid {c['green']}55;
     border-radius: 8px;
-    padding: 10px 16px;
+    padding: 10px 10px;
     text-align: center;
-    min-width: 100px;
+    min-width: 0;
   }}
   .rec-delta-val {{
     font-family: {FONTS['mono']};
-    font-size: 38px; font-weight: 700;
+    font-size: 32px; font-weight: 700;
     color: {c['green_dark']}; line-height: 1;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
+    white-space: nowrap;
   }}
   .rec-delta-label {{
     font-family: {FONTS['mono']};
-    font-size: 18px; color: {c['green_dark']};
-    text-transform: uppercase; letter-spacing: 0.1em;
+    font-size: 16px; color: {c['green_dark']};
+    text-transform: uppercase; letter-spacing: 0.08em;
+    white-space: nowrap;
   }}
   .rec-divider {{ border:none; border-top:1px solid {c['green']}33; margin:16px 0; }}
   .rec-section-label {{
@@ -593,34 +610,46 @@ def make_stage3_css() -> str:
     text-transform: uppercase;
   }}
 
-  /* Frame-by-frame comparison table */
+  /* Frame-by-frame comparison table — explicit grid so columns line up across rows. */
   .fc-table {{
     border: 1px solid {c['border']}; border-radius: 12px; overflow: hidden;
     background: {c['panel']}; box-shadow: {SHADOWS['panel']}; margin-bottom: 18px;
   }}
-  .fc-row {{ display: flex; align-items: stretch; border-bottom: 1px solid {c['border']}; }}
+  .fc-row {{
+    display: grid;
+    grid-template-columns: 140px repeat(3, 1fr);
+    align-items: stretch;
+    border-bottom: 1px solid {c['border']};
+  }}
   .fc-row:last-child {{ border-bottom: none; }}
   .fc-metric-label {{
-    flex: 0 0 96px; padding: 9px 14px;
+    padding: 10px 14px; box-sizing: border-box;
     font-family: {FONTS['mono']}; font-size: 21px; color: {c['text_dim']};
-    display: flex; align-items: center;
+    display: flex; align-items: center; justify-content: flex-start;
     background: {c['panel_alt']}; border-right: 1px solid {c['border']};
   }}
   .fc-cell {{
-    flex: 1; padding: 9px 12px; text-align: center;
-    font-family: {FONTS['mono']}; font-size: 27px; font-weight: 700; color: {c['text']};
+    padding: 10px 12px; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center;
+    font-family: {FONTS['mono']}; font-size: 26px; font-weight: 700; color: {c['text']};
     border-right: 1px solid {c['border']};
+    text-align: center;
+    min-width: 0;
   }}
   .fc-cell:last-child {{ border-right: none; }}
   .fc-cell.best {{ background: {c['green_bg']}; color: {c['green_dark']}; }}
   .fc-head {{ background: {c['panel_alt']}; }}
-  .fc-head .fc-cell {{ font-size: 21px; font-weight: 600; color: {c['text']}; line-height: 1.4; }}
+  .fc-head .fc-cell {{
+    font-size: 20px; font-weight: 600; color: {c['text']};
+    line-height: 1.35;
+    flex-direction: column;
+  }}
   .fc-head .fc-cell span {{
-    display: block; font-size: 18px; color: {c['text_dim']};
-    font-weight: 400; margin-top: 2px;
+    display: block; font-size: 17px; color: {c['text_dim']};
+    font-weight: 400; margin-top: 3px;
   }}
   .fc-row.f1 .fc-metric-label {{ color: {c['accent']}; font-weight: 700; }}
-  .fc-row.f1 .fc-cell {{ font-size: 30px; }}
+  .fc-row.f1 .fc-cell {{ font-size: 28px; }}
   .fc-row.f1 .fc-cell.best {{ color: {c['green_dark']}; }}
   .fc-img-label {{
     font-family: {FONTS['mono']}; font-size: 21px; color: {c['text_muted']};

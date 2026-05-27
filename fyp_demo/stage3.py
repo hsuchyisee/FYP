@@ -337,7 +337,7 @@ def render_stage3(dataset_root: str, scenario_id: str):
     # Static tunnel marker — shown on reruns so it stays visible
     g = COLORS["tunnel_green"]
     st.markdown(f"""
-    <div style="display:flex;flex-direction:column;align-items:center;padding:4px 0 8px;">
+    <div style="display:flex;flex-direction:column;align-items:center;padding:4px 0 28px;">
       <div style="position:relative;width:4px;height:120px;
            background:{COLORS['tunnel_track']};border-radius:4px;overflow:visible;">
         <div style="width:12px;height:12px;border-radius:50%;background:{g};
@@ -406,7 +406,7 @@ def render_stage3(dataset_root: str, scenario_id: str):
         # Static lidar tunnel marker
         g2 = COLORS["tunnel_green"]
         st.markdown(f"""
-        <div style="display:flex;flex-direction:column;align-items:center;padding:4px 0 8px;">
+        <div style="display:flex;flex-direction:column;align-items:center;padding:4px 0 28px;">
           <div style="position:relative;width:4px;height:120px;
                background:{COLORS['tunnel_track']};border-radius:4px;overflow:visible;">
             <div style="width:12px;height:12px;border-radius:50%;background:{g2};

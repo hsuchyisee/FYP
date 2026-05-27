@@ -197,16 +197,11 @@ def render_stage2(scenario_id: str, dataset_root: str):
             </div>
             """, unsafe_allow_html=True)
 
-    # Object type pills — fixed: show "Type × count" for ALL types
-    color_map = {
-        "Car": "car", "Pedestrian": "pedestrian",
-        "Truck": "truck", "Bus": "bus", "Van": "van"
-    }
+    # Object type pills — uniform neutral style for every type (no per-class coloring).
     obj_parts = []
     for t, c in sorted(type_counts.items(), key=lambda x: -x[1]):
-        css = color_map.get(t, "other")
         obj_parts.append(
-            f'<span class="obj-pill {css}" style="margin:0 6px;">'
+            f'<span class="obj-pill" style="margin:0 6px;">'
             f'{t}&nbsp;&times;&nbsp;{c}</span>'
         )
     obj_sentence = f' <span style="color:{COLORS["text_faint"]};">·</span> '.join(obj_parts)

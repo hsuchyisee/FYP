@@ -324,7 +324,7 @@ st.markdown("""
  .analysis-hero-sub {
    font-size: 32px;
    color: #475569;
-   max-width: 600px;
+   max-width: none;
    line-height: 1.8;
    margin: 0;
  }
