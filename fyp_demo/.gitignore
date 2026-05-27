@@ -1,4 +1,6 @@
 __pycache__/
 *.pyc
 *.pyo
-.streamlit/
+.streamlit/secrets.toml
+data/tensorboard/
+**/.DS_Store
