@@ -616,7 +616,7 @@ with st.container(border=True):
         fig2 = go.Figure()
         for group, gc in GROUP_COLORS.items():
             sub = delta_df[delta_df.group == group]
-            colors = [MODEL_COLORS.get(m, gc) if d >= 0 else "#DC2626" for m, d in zip(sub.model.tolist(), sub.delta)]
+            colors = [gc if d >= 0 else "#DC2626" for d in sub.delta]
             fig2.add_trace(go.Bar(
                 name=group,
                 x=sub.model.tolist(),
