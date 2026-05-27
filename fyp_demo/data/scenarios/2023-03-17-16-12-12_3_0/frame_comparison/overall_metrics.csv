@@ -1,0 +1,4 @@
+model,precision,recall,f1,tp,fp,fn
+nofusion,0.33,0.51,0.40,28,58,27
+inter_raw,0.46,0.45,0.46,25,29,30
+inter_improved,0.47,0.64,0.54,35,39,20
