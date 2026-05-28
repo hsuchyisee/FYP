@@ -126,6 +126,11 @@ def make_fusion_chart(run_specs: list, fusion: str) -> go.Figure:
             marker_kw = dict(size=4, color=muted)
             opacity   = 0.70
 
+        p = r.get("params", {})
+        param_lines = (
+            f"lr: {p.get('lr', '—')}  ·  batch: {p.get('batch_size', '—')}  ·  epochs: {p.get('epochs', '—')}<br>"
+            f"scheduler: {p.get('scheduler', '—')}"
+        ) if p else ""
         fig.add_trace(go.Scatter(
             x=xs, y=ys,
             mode="lines+markers",
@@ -134,8 +139,9 @@ def make_fusion_chart(run_specs: list, fusion: str) -> go.Figure:
             marker=marker_kw,
             opacity=opacity,
             hovertemplate=(
-                "Epoch %{x}<br>"
-                f"mAP@{IOU_CHOICE}: %{{y:.4f}}"
+                f"Epoch %{{x}}<br>"
+                f"mAP@{IOU_CHOICE}: %{{y:.4f}}<br>"
+                f"{param_lines}"
                 f"<extra>{r['label']}</extra>"
             ),
         ))
